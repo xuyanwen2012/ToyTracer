@@ -8,6 +8,9 @@
 #include "sphere.h"
 #include "plane.h"
 
+typedef std::vector<Intersectable*> ElementContainer;
+
+
 struct Color
 {
    uint8_t r;
@@ -33,7 +36,7 @@ Ray CreatePrime(int x, int y)
    auto width = 800.f;
    auto height = 600.f;
 
-   assert(width > height);
+   assert(width >= height);
 
    auto fov_adjustment = glm::tan(glm::radians(90.f) / 2.0f);
    auto aspect_ratio = width / height;
@@ -47,12 +50,39 @@ Ray CreatePrime(int x, int y)
    };
 }
 
-std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, const std::vector<Intersectable*>& elements)
+
+/**
+ * \brief 
+ * \param ray 
+ * \param elements 
+ * \param objectIndex 
+ * \return 
+ */
+bool Trace(Ray& ray, ElementContainer& elements, uint32_t& objectIndex)
+{
+   bool intersect = false;
+
+   for (uint32_t i = 0; i < elements.size(); ++i)
+   {
+      // foreach triangles
+      if (elements[i]->Intersect(ray))
+      {
+         intersect |= true;
+         objectIndex = i;
+      }
+   }
+
+   return intersect;
+}
+
+
+std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, const ElementContainer& elements)
 {
    const int w = block.width;
    const int h = block.height;
 
    auto frame_buffer = std::make_unique<glm::vec3[]>(w * h);
+   
 
    for (auto y = 0; y < block.height; ++y)
    {
@@ -102,7 +132,7 @@ int main()
       vec3{0.0, 0.0, -10.0}, vec3{0.0, 0.0, -1.0}
    };
 
-   std::vector<Intersectable*> elements{
+   ElementContainer elements{
       &plane,
       &sphere,
    };
