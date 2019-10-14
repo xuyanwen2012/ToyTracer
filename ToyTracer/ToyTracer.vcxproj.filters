@@ -29,5 +29,8 @@
     <ClInclude Include="intersectable .h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

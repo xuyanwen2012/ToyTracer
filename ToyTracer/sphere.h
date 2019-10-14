@@ -41,7 +41,7 @@ public:
 
    glm::vec3 GetNormal(const glm::vec3 pos) const override
    {
-      return (pos - origin_) * (-1.f / radius_);
+      return normalize(pos - origin_);
    }
 
 private:

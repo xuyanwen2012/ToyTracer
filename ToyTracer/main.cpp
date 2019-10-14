@@ -1,9 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <glm/trigonometric.hpp>
+#include <vector>
 
 #include "ray.h"
 #include "sphere.h"
+#include "plane.h"
 
 struct Color
 {
@@ -30,10 +33,13 @@ Ray CreatePrime(int x, int y)
    auto width = 800.f;
    auto height = 600.f;
 
+   assert(width > height);
+
+   auto fov_adjustment = glm::tan(glm::radians(90.f) / 2.0f);
    auto aspect_ratio = width / height;
 
-   const auto sensor_x = ((0.5f + static_cast<float>(x)) / width * 2.f - 1.f) * aspect_ratio;
-   const auto sensor_y = 1.f - (0.5f + static_cast<float>(y)) / height * 2.f;
+   const auto sensor_x = ((0.5f + static_cast<float>(x)) / width * 2.f - 1.f) * aspect_ratio * fov_adjustment;
+   const auto sensor_y = (1.f - (0.5f + static_cast<float>(y)) / height * 2.f) * fov_adjustment;
 
    return Ray{
       glm::vec3{},
@@ -41,7 +47,7 @@ Ray CreatePrime(int x, int y)
    };
 }
 
-std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, Intersectable& object)
+std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, const std::vector<Intersectable*>& elements)
 {
    const int w = block.width;
    const int h = block.height;
@@ -55,13 +61,16 @@ std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, Intersectabl
          // iterate through all objects
          Ray ray = CreatePrime(x, y);
 
-         if (auto t = object.Intersect(ray))
+         for (const auto object : elements)
          {
-            frame_buffer[x + y * w] = glm::vec3(255, 0 , 0);
-         }
-         else
-         {
-            frame_buffer[x + y * w] = glm::vec3(0, 0, 0);
+            if (auto t = object->Intersect(ray))
+            {
+               frame_buffer[x + y * w] = glm::vec3(255, 0, 0);
+            }
+            else
+            {
+               frame_buffer[x + y * w] = glm::vec3(0, 0, 0);
+            }
          }
       }
    }
@@ -79,6 +88,7 @@ int main()
 
    const ViewBlock kBlock = {0, 0, kWidth, kHeight};
 
+   // Constructing the scene
    auto sphere = Sphere{
       vec3{
          0.f,
@@ -88,7 +98,17 @@ int main()
       1.f
    };
 
-   const auto frame_buffer = RenderToBuffer(kBlock, sphere);
+   auto plane = Plane{
+      vec3{0.0, 0.0, -10.0}, vec3{0.0, 0.0, -1.0}
+   };
+
+   std::vector<Intersectable*> elements{
+      &plane,
+      &sphere,
+   };
+
+   // Trace
+   const auto frame_buffer = RenderToBuffer(kBlock, elements);
 
    // Write to file
    std::ofstream image("image.ppm");

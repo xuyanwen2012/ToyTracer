@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="intersectable .h" />
+    <ClInclude Include="plane.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="sphere.h" />
   </ItemGroup>
