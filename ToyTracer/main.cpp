@@ -5,6 +5,17 @@
 #include "ray.h"
 #include "sphere.h"
 
+struct Color
+{
+   uint8_t r;
+   uint8_t g;
+   uint8_t b;
+   // alpha
+};
+
+constexpr Color Red = Color{255, 0, 0};
+constexpr Color Black = Color{0, 0, 0};
+
 struct ViewBlock
 {
    int x;
@@ -30,40 +41,32 @@ Ray CreatePrime(int x, int y)
    };
 }
 
-
-void render(const ViewBlock& block, Intersectable& object)
+std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, Intersectable& object)
 {
-   std::ofstream image("image.ppm");
+   const int w = block.width;
+   const int h = block.height;
 
-   if (image.is_open())
+   auto frame_buffer = std::make_unique<glm::vec3[]>(w * h);
+
+   for (auto y = 0; y < block.height; ++y)
    {
-      image << "P3\n" << block.width << " " << block.height << " 255\n";
-
-      for (auto y = 0; y < block.height; ++y)
+      for (auto x = 0; x < block.width; ++x)
       {
-         for (auto x = 0; x < block.width; ++x)
+         // iterate through all objects
+         Ray ray = CreatePrime(x, y);
+
+         if (auto t = object.Intersect(ray))
          {
-            auto ray = CreatePrime(x, y);
-
-            if (object.Intersect(ray))
-            {
-               auto v = ray.GetDirection();
-               auto p = ray.GetOrigin() + v * 0.f;
-               auto n = object.GetNormal(p);
-
-               auto facing_ratio = dot(n, v);
-
-               image << 102 << ' ' << 255 << ' ' << 102 << "\n";
-            }
-            else
-            {
-               image << 0 << ' ' << 0 << ' ' << 0 << "\n";
-            }
+            frame_buffer[x + y * w] = glm::vec3(255, 0 , 0);
+         }
+         else
+         {
+            frame_buffer[x + y * w] = glm::vec3(0, 0, 0);
          }
       }
-
-      image.close();
    }
+
+   return frame_buffer;
 }
 
 int main()
@@ -85,7 +88,27 @@ int main()
       1.f
    };
 
-   render(kBlock, sphere);
+   const auto frame_buffer = RenderToBuffer(kBlock, sphere);
+
+   // Write to file
+   std::ofstream image("image.ppm");
+
+   if (image.is_open())
+   {
+      image << "P3\n" << kBlock.width << " " << kBlock.height << " 255\n";
+
+      for (auto y = 0; y < kBlock.height; ++y)
+      {
+         for (auto x = 0; x < kBlock.width; ++x)
+         {
+            const auto color = frame_buffer[x + y * kBlock.width];
+
+            image << color.r << " " << color.g << " " << color.b << " ";
+         }
+      }
+
+      image.close();
+   }
 
    return EXIT_SUCCESS;
 }
