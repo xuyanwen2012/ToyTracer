@@ -8,8 +8,8 @@
 #include "sphere.h"
 #include "plane.h"
 
-typedef std::vector<Intersectable*> ElementContainer;
-typedef std::unique_ptr<glm::vec3[]> Vec3BufferPtr;
+using ElementContainer = std::vector<Intersectable*>;
+using Vec3BufferPtr = std::unique_ptr<glm::vec3[]>;
 
 enum class MaterialType
 {
@@ -35,31 +35,64 @@ struct ViewBlock
    int height;
 };
 
+struct Intersection
+{
+   float distance;
+   Intersectable* element;
+};
+
+
+class Scene
+{
+public:
+   Scene()
+   {
+   }
+
+private:
+   uint32_t width_;
+   uint32_t height_;
+   float fov_;
+   ElementContainer elements_;
+   uint32_t max_recursion_depth_;
+   // lights
+   // camera
+};
+
 /**
  * \brief 
  * \param x 
  * \param y 
  * \return 
  */
-Ray CreatePrimeRay(int x, int y)
+Ray CreatePrimeRay(const ViewBlock& block, int x, int y)
 {
-   // TODO: Fix me
-   auto width = 800.f;
-   auto height = 600.f;
-
-   assert(width >= height);
+   assert(block.width >= block.height);
 
    auto fov_adjustment = glm::tan(glm::radians(90.f) / 2.0f);
-   auto aspect_ratio = width / height;
+   auto aspect_ratio = block.width / block.height;
 
-   const auto sensor_x = ((0.5f + static_cast<float>(x)) / width * 2.f - 1.f) * aspect_ratio * fov_adjustment;
-   const auto sensor_y = (1.f - (0.5f + static_cast<float>(y)) / height * 2.f) * fov_adjustment;
+   const auto sensor_x = ((0.5f + static_cast<float>(x)) / block.width * 2.f - 1.f) * aspect_ratio * fov_adjustment;
+   const auto sensor_y = (1.f - (0.5f + static_cast<float>(y)) / block.height * 2.f) * fov_adjustment;
 
    return Ray(
       glm::vec3(),
       normalize(glm::vec3(sensor_x, sensor_y, -1.f))
    );
 }
+
+//Ray BuildCameraRay(const ViewBlock& block, glm::vec2 point_in_pixel)
+//{
+//   // for now, the origin is (0, 0)
+//   const auto camera_origin = glm::vec3();
+//
+//   const auto d = glm::normalize(camera_origin / glm::vec3(point_in_pixel, -1.0f));
+//
+//   return Ray(
+//      camera_origin,
+//      d
+//   );
+//}
 
 
 /**
@@ -95,7 +128,6 @@ bool Trace(
 }
 
 
-
 /**
  * \brief 
  * \param block 
@@ -117,8 +149,10 @@ Vec3BufferPtr RenderToBuffer(
    {
       for (auto x = 0; x < block.width; ++x)
       {
-         // iterate through all objects
-         auto ray = CreatePrimeRay(x, y);
+         // Point in pixel (x, y)
+         // CameraOrigin ?
+         // 
+         auto ray = CreatePrimeRay(block, x, y);
 
          uint32_t index;
          float t;
@@ -126,31 +160,29 @@ Vec3BufferPtr RenderToBuffer(
          if (Trace(ray, elements, index, t))
          {
             auto object = elements[index];
-
-
          }
          else
          {
-            
          }
 
 
-  /*       for (const auto object : elements)
-         {
-            if (auto t = object->Intersect(ray))
-            {
-               frame_buffer[x + y * w] = glm::vec3(255, 0, 0);
-            }
-            else
-            {
-               frame_buffer[x + y * w] = glm::vec3(0, 0, 0);
-            }
-         }*/
+         /*       for (const auto object : elements)
+                {
+                   if (auto t = object->Intersect(ray))
+                   {
+                      frame_buffer[x + y * w] = glm::vec3(255, 0, 0);
+                   }
+                   else
+                   {
+                      frame_buffer[x + y * w] = glm::vec3(0, 0, 0);
+                   }
+                }*/
       }
    }
 
    return frame_buffer;
 }
+
 
 int main()
 {
