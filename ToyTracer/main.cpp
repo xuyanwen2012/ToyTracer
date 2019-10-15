@@ -9,14 +9,19 @@
 #include "plane.h"
 
 typedef std::vector<Intersectable*> ElementContainer;
+typedef std::unique_ptr<glm::vec3[]> Vec3BufferPtr;
 
+enum class MaterialType
+{
+   kReflectionAndRefraction,
+   kReflection,
+};
 
 struct Color
 {
    uint8_t r;
    uint8_t g;
    uint8_t b;
-   // alpha
 };
 
 constexpr Color Red = Color{255, 0, 0};
@@ -30,7 +35,13 @@ struct ViewBlock
    int height;
 };
 
-Ray CreatePrime(int x, int y)
+/**
+ * \brief 
+ * \param x 
+ * \param y 
+ * \return 
+ */
+Ray CreatePrimeRay(int x, int y)
 {
    // TODO: Fix me
    auto width = 800.f;
@@ -44,10 +55,10 @@ Ray CreatePrime(int x, int y)
    const auto sensor_x = ((0.5f + static_cast<float>(x)) / width * 2.f - 1.f) * aspect_ratio * fov_adjustment;
    const auto sensor_y = (1.f - (0.5f + static_cast<float>(y)) / height * 2.f) * fov_adjustment;
 
-   return Ray{
-      glm::vec3{},
-      normalize(glm::vec3{sensor_x, sensor_y, -1.f})
-   };
+   return Ray(
+      glm::vec3(),
+      normalize(glm::vec3(sensor_x, sensor_y, -1.f))
+   );
 }
 
 
@@ -55,20 +66,28 @@ Ray CreatePrime(int x, int y)
  * \brief 
  * \param ray 
  * \param elements 
- * \param objectIndex 
+ * \param objectIndex
+ * \param tNearest 
  * \return 
  */
-bool Trace(Ray& ray, ElementContainer& elements, uint32_t& objectIndex)
+bool Trace(
+   const Ray& ray,
+   const ElementContainer& elements,
+   uint32_t& objectIndex,
+   float& tNearest
+)
 {
    bool intersect = false;
+   tNearest = INFINITY;
 
    for (uint32_t i = 0; i < elements.size(); ++i)
    {
-      // foreach triangles
-      if (elements[i]->Intersect(ray))
+      // TODO: foreach triangles
+      if (auto t = elements[i]->Intersect(ray))
       {
-         intersect |= true;
          objectIndex = i;
+         tNearest = t.value();
+         intersect |= true;
       }
    }
 
@@ -76,22 +95,47 @@ bool Trace(Ray& ray, ElementContainer& elements, uint32_t& objectIndex)
 }
 
 
-std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, const ElementContainer& elements)
+
+/**
+ * \brief 
+ * \param block 
+ * \param elements 
+ * \return 
+ */
+Vec3BufferPtr RenderToBuffer(
+   const ViewBlock& block,
+   const ElementContainer& elements
+)
 {
    const int w = block.width;
    const int h = block.height;
 
    auto frame_buffer = std::make_unique<glm::vec3[]>(w * h);
-   
+
 
    for (auto y = 0; y < block.height; ++y)
    {
       for (auto x = 0; x < block.width; ++x)
       {
          // iterate through all objects
-         Ray ray = CreatePrime(x, y);
+         auto ray = CreatePrimeRay(x, y);
 
-         for (const auto object : elements)
+         uint32_t index;
+         float t;
+
+         if (Trace(ray, elements, index, t))
+         {
+            auto object = elements[index];
+
+
+         }
+         else
+         {
+            
+         }
+
+
+  /*       for (const auto object : elements)
          {
             if (auto t = object->Intersect(ray))
             {
@@ -101,7 +145,7 @@ std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, const Elemen
             {
                frame_buffer[x + y * w] = glm::vec3(0, 0, 0);
             }
-         }
+         }*/
       }
    }
 
