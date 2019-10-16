@@ -6,14 +6,12 @@
 #include <array>
 
 #include "Ray.h"
-// #include "Color.h"
 #include "Element.h"
 #include "Sphere.h"
 #include "Plane.h"
 #include "Light.h"
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
-// using Colour = glm::vec<3, uint8_t>;
 
 // Create a Ray from camera to pixel.
 // 
@@ -28,31 +26,30 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
    sensor_x *= aspect_ratio * fov_adjustment;
    sensor_y *= fov_adjustment;
 
-   return Ray(
+   return {
       glm::vec3(),
       normalize(glm::vec3(sensor_x, sensor_y, -1.0))
-   );
+   };
 }
 
-glm::vec3 ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
+Color ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
 {
    return {};
 }
 
 // Helper function of Trace
 //
-glm::vec3 ComputeIllumination(
+Color ComputeIllumination(
    const Ray& ray,
    float intersect_dist,
-   // ElementContainer& elements,
    Element* element,
    std::unique_ptr<DirectionLight>& light_ptr, // tmp
    int depth
 )
 {
    auto hit_point = ray.GetOrigin() + ray.GetDirection() * intersect_dist;
-   auto surface_normal = element->GetSurfaceNormal(hit_point);
-   auto direction_to_light = -light_ptr->GetDirection();
+   const auto surface_normal = element->GetSurfaceNormal(hit_point);
+   const auto direction_to_light = -light_ptr->GetDirection();
 
    float light_power = dot(surface_normal, direction_to_light);
    light_power = std::max(0.0f, light_power) * light_ptr->GetIntensity();
@@ -65,7 +62,7 @@ glm::vec3 ComputeIllumination(
 
    // Compute Shadow?
 
-   return glm::vec3{
+   return Color{
       glm::clamp(color.r, 0.0f, 1.0f),
       glm::clamp(color.g, 0.0f, 1.0f),
       glm::clamp(color.b, 0.0f, 1.0f)
@@ -95,16 +92,16 @@ Color Trace(
 )
 {
    Element* target = nullptr;
-   float tnear = INFINITY;
+   float t_near = INFINITY;
    float t = INFINITY; // intersect distance
 
    for (auto&& element : elements)
    {
       if (element->Intersect(ray, t))
       {
-         if (t < tnear)
+         if (t < t_near)
          {
-            tnear = t;
+            t_near = t;
             target = element.get();
          }
       }

@@ -11,7 +11,6 @@ public:
       origin_(center),
       radius_(radius)
    {
-      diffuse_color_ = color;
    }
 
    bool Intersect(const Ray& ray, float& t) override;

@@ -10,7 +10,6 @@ public:
       center_(center),
       normal_(normal)
    {
-      diffuse_color_ = color;
    }
 
    bool Intersect(const Ray& ray, float& t) override;
