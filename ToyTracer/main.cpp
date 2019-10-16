@@ -34,6 +34,56 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
    );
 }
 
+glm::vec3 ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
+{
+   return {};
+}
+
+// Helper function of Trace
+//
+glm::vec3 ComputeIllumination(
+   const Ray& ray,
+   float intersect_dist,
+   // ElementContainer& elements,
+   Element* element,
+   std::unique_ptr<DirectionLight>& light_ptr, // tmp
+   int depth
+)
+{
+   auto hit_point = ray.GetOrigin() + ray.GetDirection() * intersect_dist;
+   auto surface_normal = element->GetSurfaceNormal(hit_point);
+   auto direction_to_light = -light_ptr->GetDirection();
+
+   float light_power = dot(surface_normal, direction_to_light);
+   light_power = std::max(0.0f, light_power) * light_ptr->GetIntensity();
+
+   float light_reflected = element->GetAlbedo() / glm::pi<float>();
+
+   //return surface_normal;
+   const auto color = element->GetDiffuseColor() * light_ptr->GetColor() * light_power * light_reflected;
+
+
+   // Compute Shadow?
+
+   return glm::vec3{
+      glm::clamp(color.r, 0.0f, 1.0f),
+      glm::clamp(color.g, 0.0f, 1.0f),
+      glm::clamp(color.b, 0.0f, 1.0f)
+   };
+
+
+   //glm::vec3 color {};
+   //switch (element->GetMaterialType())
+   //{
+   //case MaterialType::kReflectionAndRefraction:
+   //case MaterialType::kReflection:
+   //case MaterialType::kDiffuseAndGlossy: color = ShadeDiffuse(hit_point, surface_normal) break;
+   //default: ;
+   //}
+
+   //return color;
+}
+
 // The main tracing function. 
 // 
 // 
@@ -62,37 +112,11 @@ glm::vec3 Trace(
 
    if (target != nullptr)
    {
-      // Compute Illumination
-      auto hit_point = ray.GetOrigin() + ray.GetDirection() * t;
-      auto surface_normal = target->GetSurfaceNormal(hit_point);
-      auto direction_to_light = -light_ptr->GetDirection();
-
-      float light_power = dot(surface_normal, direction_to_light);
-      light_power = std::max(0.0f, light_power) * light_ptr->GetIntensity();
-
-      float light_reflected = target->GetAlbedo() / glm::pi<float>();
-
-      // need to implemnt operator for color
-
-      // * light_ptr->GetColor() * light_power * light_reflected
-
-      // * light_reflected
-      //  * light_power
-
-      //return surface_normal;
-
-      // Clamp?
-      const auto color = target->GetDiffuseColor() * light_ptr->GetColor() * light_power;
-      // *light_reflected;
-
-      return glm::vec3{
-         glm::clamp(color.r, 0.0f, 1.0f),
-         glm::clamp(color.g, 0.0f, 1.0f),
-         glm::clamp(color.b, 0.0f, 1.0f)
-      };
+      return ComputeIllumination(ray, t, target, light_ptr, depth);
    }
 
-   return glm::vec3{};
+   // temp return background color
+   return glm::vec3{ 0.11764705882f, 0.56470588235f, 1.0f};
 }
 
 
@@ -120,7 +144,7 @@ int main()
 
    // third ball
    std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
-      glm::vec3{2.0f, 0.0f, -7.0f},
+      glm::vec3{2.0f, 0.0f, -9.0f},
       1.0f,
       glm::vec3{0.0f, 0.0f, 1.0f}
    );
