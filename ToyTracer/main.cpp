@@ -6,14 +6,14 @@
 #include <array>
 
 #include "Ray.h"
-#include "Color.h"
+// #include "Color.h"
 #include "Element.h"
 #include "Sphere.h"
 #include "Plane.h"
 #include "Light.h"
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
-using Colour = glm::vec<4, uint8_t>;
+// using Colour = glm::vec<3, uint8_t>;
 
 // Create a Ray from camera to pixel.
 // 
@@ -37,7 +37,7 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 // The main tracing function. 
 // 
 // 
-Color Trace(
+glm::vec3 Trace(
    const Ray& ray,
    ElementContainer& elements,
    std::unique_ptr<DirectionLight>& light_ptr, // tmp
@@ -81,16 +81,12 @@ Color Trace(
       // * light_reflected
       //  * light_power
 
-      auto debug_color = Color {
-         static_cast<uint8_t>(surface_normal.r * 255),
-         static_cast<uint8_t>(surface_normal.g * 255),
-         static_cast<uint8_t>(surface_normal.b * 255),
-      };
+      return surface_normal;
 
-      return (target->GetDiffuseColor() * light_ptr->GetColor()).Clamp();
+      //return (target->GetDiffuseColor() * light_ptr->GetColor()).Clamp();
    }
 
-   return Color::black();
+   return glm::vec3{};
 }
 
 
@@ -106,28 +102,28 @@ int main()
    std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
       glm::vec3{-2.0f, 0.0f, -3.0f},
       1.0f,
-      Color::red()
+      glm::vec3{1.0f, 0.0f, 0.0f}
    );
 
    // second ball
    std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
       glm::vec3{0.0f, 0.0f, -5.0f},
       1.0f,
-      Color::green()
+      glm::vec3{0.0f, 1.0f, 0.0f}
    );
 
    // third ball
    std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
       glm::vec3{2.0f, 0.0f, -7.0f},
       1.0f,
-      Color::blue()
+      glm::vec3{0.0f, 0.0f, 1.0f}
    );
 
    // Plane
    std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
       glm::vec3{0.0f, -1.0f, 0.0f},
       glm::vec3{0.0f, -1.0f, 0.0f},
-      Color{125, 125, 125}
+      glm::vec3{0.5f, 0.5f, 0.5f}
    );
 
    elements.push_back(std::move(plane_ptr));
@@ -138,7 +134,8 @@ int main()
    // Adding light to the scene
    // TODO: Fix this temp code
    auto light_ptr = std::make_unique<DirectionLight>(
-      Color::white(),
+      glm::vec3{1.0f, 1.0f, 1.0f},
+      // Color::white(),
       1.0f,
       glm::vec3{0.0f, 0.0f, -1.0f}
    );
@@ -153,7 +150,7 @@ int main()
          Ray ray = BuildPrimeRay(kWidth, kHeight, x, y);
 
          // pixel should trace
-         frame_buffer[x + y * kWidth] = Trace(ray, elements, light_ptr, 0).ToVec3();
+         frame_buffer[x + y * kWidth] = Trace(ray, elements, light_ptr, 0); // .ToVec3();
       }
    }
 
@@ -170,7 +167,9 @@ int main()
          {
             const auto color = frame_buffer[x + y * kWidth];
 
-            image << color.r << " " << color.g << " " << color.b << " ";
+            image << std::clamp<int>(color.r * 255, 0, 255) << " "
+               << std::clamp<int>(color.g * 255, 0, 255) << " "
+               << std::clamp<int>(color.b * 255, 0, 255) << " ";
          }
       }
 

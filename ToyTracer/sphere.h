@@ -6,7 +6,7 @@
 class Sphere : public Element
 {
 public:
-   Sphere(const glm::vec3& center, const double radius, Color color) :
+   Sphere(const glm::vec3& center, const double radius, glm::vec3 color) :
       origin_{center},
       radius_{radius}
    {
@@ -14,6 +14,7 @@ public:
    }
 
    bool Intersect(const Ray& ray, float& t) override;
+
    glm::vec3 GetSurfaceNormal(glm::vec3& hit_point) override
    {
       return normalize(hit_point - origin_);
