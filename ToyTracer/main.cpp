@@ -7,13 +7,7 @@
 #include "Ray.h"
 #include "Color.h"
 #include "Element.h"
-
-enum class MaterialType
-{
-   kReflectionAndRefraction,
-   kReflection,
-   kDiffuseAndGlossy,
-};
+#include "Sphere.h"
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
 
@@ -39,18 +33,39 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 // The main tracing function. 
 // 
 // 
-Color Trace(const Ray& ray)
+Color Trace(const Ray& ray, ElementContainer& elements, int depth)
 {
-   return Color::blue();
+   for (auto&& element : elements)
+   {
+      Element* target;
+      float min_dist = INFINITY;
+
+
+      if (element->Intersect(ray))
+      {
+         return Color::blue();
+      }
+   }
+
+   return Color::black();
 }
 
 
 int main()
 {
-   ElementContainer elements;
-
+   // Setup Scene
    const uint32_t kWidth = 800;
    const uint32_t kHeight = 600;
+
+   ElementContainer elements;
+
+   std::unique_ptr<Element> sphere_ptr = std::make_unique<Sphere>(
+      glm::vec3{0.0f, 0.0f, -5.0f},
+      1.0f
+   );
+
+   elements.push_back(std::move(sphere_ptr));
+
 
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
@@ -62,7 +77,7 @@ int main()
          Ray ray = BuildPrimeRay(kWidth, kHeight, x, y);
 
          // pixel should trace
-         frame_buffer[x + y * kWidth] = Trace(ray).ToVec3();
+         frame_buffer[x + y * kWidth] = Trace(ray, elements, 0).ToVec3();
       }
    }
 

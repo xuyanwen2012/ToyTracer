@@ -20,10 +20,7 @@ struct Color
    {
    }
 
-   glm::vec3 ToVec3() const
-   {
-      return { r, g, b };
-   }
+   glm::vec3 ToVec3() const { return {r, g, b}; }
 
    uint8_t r;
    uint8_t g;
