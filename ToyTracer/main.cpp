@@ -116,7 +116,7 @@ glm::vec3 Trace(
    }
 
    // temp return background color
-   return glm::vec3{ 0.11764705882f, 0.56470588235f, 1.0f};
+   return glm::vec3{0.11764705882f, 0.56470588235f, 1.0f};
 }
 
 
@@ -130,23 +130,23 @@ int main()
 
    // first ball
    std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
+      glm::vec3{1.0f, 0.0f, 0.0f},
       glm::vec3{-2.0f, 0.0f, -3.0f},
-      1.0f,
-      glm::vec3{1.0f, 0.0f, 0.0f}
+      1.0f
    );
 
    // second ball
    std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
+      glm::vec3{0.0f, 1.0f, 0.0f},
       glm::vec3{0.0f, 0.0f, -5.0f},
-      1.0f,
-      glm::vec3{0.0f, 1.0f, 0.0f}
+      1.0f
    );
 
    // third ball
    std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
+      glm::vec3{0.0f, 0.0f, 1.0f},
       glm::vec3{2.0f, 0.0f, -9.0f},
-      1.0f,
-      glm::vec3{0.0f, 0.0f, 1.0f}
+      1.0f
    );
 
    // Plane
@@ -197,9 +197,9 @@ int main()
          {
             const auto color = frame_buffer[x + y * kWidth];
 
-            image << std::clamp<int>(color.r * 255, 0, 255) << " "
-               << std::clamp<int>(color.g * 255, 0, 255) << " "
-               << std::clamp<int>(color.b * 255, 0, 255) << " ";
+            image << std::clamp(static_cast<int>(color.r * 255), 0, 255) << " "
+               << std::clamp(static_cast<int>(color.g * 255), 0, 255) << " "
+               << std::clamp(static_cast<int>(color.b * 255), 0, 255) << " ";
          }
       }
 

@@ -6,9 +6,10 @@
 class Sphere : public Element
 {
 public:
-   Sphere(const glm::vec3& center, const double radius, glm::vec3 color) :
-      origin_{center},
-      radius_{radius}
+   Sphere(glm::vec3 color, const glm::vec3& center, const float radius) :
+      Element(color),
+      origin_(center),
+      radius_(radius)
    {
       diffuse_color_ = color;
    }
@@ -22,5 +23,5 @@ public:
 
 private:
    glm::vec3 origin_;
-   double radius_;
+   float radius_;
 };

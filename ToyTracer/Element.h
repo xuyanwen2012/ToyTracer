@@ -13,7 +13,10 @@ enum class MaterialType
 class Element
 {
 public:
-   Element() : material_type_(MaterialType::kDiffuseAndGlossy), albedo_(0.58f)
+   Element(glm::vec3 color) :
+      material_type_(MaterialType::kDiffuseAndGlossy),
+      diffuse_color_(color),
+      albedo_(0.58f)
    {
    }
 
