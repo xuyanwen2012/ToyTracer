@@ -4,9 +4,9 @@
 #include <vector>
 #include <array>
 
-#include "Sphere.h"
 #include "Ray.h"
 #include "Color.h"
+#include "Element.h"
 
 enum class MaterialType
 {
@@ -15,8 +15,7 @@ enum class MaterialType
    kDiffuseAndGlossy,
 };
 
-using ElementContainer = std::vector<std::unique_ptr<Intersectable>>;
-
+using ElementContainer = std::vector<std::unique_ptr<Element>>;
 
 Ray BuildPrimeRay(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
 {
