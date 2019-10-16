@@ -1,6 +1,6 @@
 #pragma once
 
-#include "intersectable .h"
+#include "Intersectable.h"
 
 class Plane : public Intersectable
 {

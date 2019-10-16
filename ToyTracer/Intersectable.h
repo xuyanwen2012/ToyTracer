@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-#include "ray.h"
+#include "Ray.h"
 
 class Intersectable
 {

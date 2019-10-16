@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/gtx/scalar_multiplication.hpp>
-#include "intersectable .h"
+#include "Intersectable.h"
 
 class Sphere : public Intersectable
 {
