@@ -8,6 +8,7 @@
 #include "Color.h"
 #include "Element.h"
 #include "Sphere.h"
+#include "Plane.h"
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
 
@@ -52,6 +53,8 @@ Color Trace(const Ray& ray, ElementContainer& elements, int depth)
 
    if (target != nullptr)
    {
+      // Compute Illumination
+
       return target->GetDiffuseColor();
    }
 
@@ -81,12 +84,21 @@ int main()
       Color::green()
    );
 
+   // third ball
    std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
       glm::vec3{2.0f, 0.0f, -7.0f},
       1.0f,
       Color::blue()
    );
 
+   // Plane
+   std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
+      glm::vec3{},
+      glm::vec3{0.0f, -1.0f, 0.0f},
+      Color::white()
+   );
+
+   elements.push_back(std::move(plane_ptr));
    elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
