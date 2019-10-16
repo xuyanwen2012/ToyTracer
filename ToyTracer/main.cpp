@@ -197,9 +197,9 @@ int main()
          {
             const auto color = frame_buffer[x + y * kWidth];
 
-            image << std::clamp(static_cast<int>(color.r * 255), 0, 255) << " "
-               << std::clamp(static_cast<int>(color.g * 255), 0, 255) << " "
-               << std::clamp(static_cast<int>(color.b * 255), 0, 255) << " ";
+            image << glm::clamp(static_cast<int>(color.r * 255), 0, 255) << " "
+               << glm::clamp(static_cast<int>(color.g * 255), 0, 255) << " "
+               << glm::clamp(static_cast<int>(color.b * 255), 0, 255) << " ";
          }
       }
 
