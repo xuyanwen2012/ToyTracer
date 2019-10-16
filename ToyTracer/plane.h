@@ -5,9 +5,10 @@
 class Plane : public Element
 {
 public:
-   Plane(glm::vec3 center, glm::vec3 normal, glm::vec3 color) :
-      center_{center},
-      normal_{normal}
+   Plane(glm::vec3 color, glm::vec3 center, glm::vec3 normal) :
+      Element(color),
+      center_(center),
+      normal_(normal)
    {
       diffuse_color_ = color;
    }
