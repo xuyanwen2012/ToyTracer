@@ -14,6 +14,10 @@ public:
    }
 
    bool Intersect(const Ray& ray, float& t) override;
+   glm::vec3 GetSurfaceNormal(glm::vec3& hit_point) override
+   {
+      return normalize(hit_point - origin_);
+   }
 
 private:
    glm::vec3 origin_;

@@ -1,6 +1,7 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
+#include <glm/gtc/constants.hpp>
 #include <vector>
 #include <array>
 
@@ -9,8 +10,10 @@
 #include "Element.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "Light.h"
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
+using Colour = glm::vec<4, uint8_t>;
 
 // Create a Ray from camera to pixel.
 // 
@@ -34,11 +37,17 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 // The main tracing function. 
 // 
 // 
-Color Trace(const Ray& ray, ElementContainer& elements, int depth)
+Color Trace(
+   const Ray& ray,
+   ElementContainer& elements,
+   std::unique_ptr<DirectionLight>& light_ptr, // tmp
+   int depth
+)
 {
    Element* target = nullptr;
    float tnear = INFINITY;
-   float t = INFINITY;
+   float t = INFINITY; // intersect distance
+
    for (auto&& element : elements)
    {
       if (element->Intersect(ray, t))
@@ -54,8 +63,31 @@ Color Trace(const Ray& ray, ElementContainer& elements, int depth)
    if (target != nullptr)
    {
       // Compute Illumination
+      auto hit_point = ray.GetOrigin() + ray.GetDirection() * t;
+      auto surface_normal = target->GetSurfaceNormal(hit_point);
+      auto direction_to_light = -light_ptr->GetDirection();
 
-      return target->GetDiffuseColor();
+      float light_power = dot(surface_normal, direction_to_light);
+      light_power = std::max(0.0f, light_power) * light_ptr->GetIntensity();
+
+      float light_reflected = target->GetAlbedo() / glm::pi<float>();
+
+      // need to implemnt operator for color
+
+      // * light_ptr->GetColor() * light_power * light_reflected
+
+      //target->GetDiffuseColor()
+
+      // * light_reflected
+      //  * light_power
+
+      auto debug_color = Color {
+         static_cast<uint8_t>(surface_normal.r * 255),
+         static_cast<uint8_t>(surface_normal.g * 255),
+         static_cast<uint8_t>(surface_normal.b * 255),
+      };
+
+      return (target->GetDiffuseColor() * light_ptr->GetColor()).Clamp();
    }
 
    return Color::black();
@@ -95,7 +127,7 @@ int main()
    std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
       glm::vec3{0.0f, -1.0f, 0.0f},
       glm::vec3{0.0f, -1.0f, 0.0f},
-      Color::white()
+      Color{125, 125, 125}
    );
 
    elements.push_back(std::move(plane_ptr));
@@ -103,6 +135,13 @@ int main()
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
 
+   // Adding light to the scene
+   // TODO: Fix this temp code
+   auto light_ptr = std::make_unique<DirectionLight>(
+      Color::white(),
+      1.0f,
+      glm::vec3{0.0f, 0.0f, -1.0f}
+   );
 
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
@@ -114,7 +153,7 @@ int main()
          Ray ray = BuildPrimeRay(kWidth, kHeight, x, y);
 
          // pixel should trace
-         frame_buffer[x + y * kWidth] = Trace(ray, elements, 0).ToVec3();
+         frame_buffer[x + y * kWidth] = Trace(ray, elements, light_ptr, 0).ToVec3();
       }
    }
 
