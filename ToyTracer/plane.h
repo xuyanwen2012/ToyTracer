@@ -5,7 +5,7 @@
 class Plane : public Element
 {
 public:
-   Plane(glm::vec3 center, glm::vec3 normal, Color color) :
+   Plane(glm::vec3 center, glm::vec3 normal, glm::vec3 color) :
       center_{center},
       normal_{normal}
    {

@@ -76,14 +76,20 @@ glm::vec3 Trace(
 
       // * light_ptr->GetColor() * light_power * light_reflected
 
-      //target->GetDiffuseColor()
-
       // * light_reflected
       //  * light_power
 
-      return surface_normal;
+      //return surface_normal;
 
-      //return (target->GetDiffuseColor() * light_ptr->GetColor()).Clamp();
+      // Clamp?
+      const auto color = target->GetDiffuseColor() * light_ptr->GetColor() * light_power;
+      // *light_reflected;
+
+      return glm::vec3{
+         glm::clamp(color.r, 0.0f, 1.0f),
+         glm::clamp(color.g, 0.0f, 1.0f),
+         glm::clamp(color.b, 0.0f, 1.0f)
+      };
    }
 
    return glm::vec3{};
