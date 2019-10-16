@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Color.h"
 #include "Ray.h"
 
 enum class MaterialType
@@ -23,8 +24,8 @@ public:
    MaterialType GetMaterialType() const { return material_type_; }
    // Color GetDiffuseColor() const { return diffuse_color_; } // Should Evaluate, const Vec2f & 
 
-private:
+protected:
    MaterialType material_type_;
-   // Color diffuse_color_;
+   Color diffuse_color_;
    // specularExponent
 };

@@ -61,7 +61,8 @@ int main()
 
    std::unique_ptr<Element> sphere_ptr = std::make_unique<Sphere>(
       glm::vec3{0.0f, 0.0f, -5.0f},
-      1.0f
+      1.0f,
+      Color::green()
    );
 
    elements.push_back(std::move(sphere_ptr));
