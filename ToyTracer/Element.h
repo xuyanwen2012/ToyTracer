@@ -13,7 +13,7 @@ enum class MaterialType
 class Element
 {
 public:
-   Element(glm::vec3 color) :
+   Element(Color color) :
       material_type_(MaterialType::kDiffuseAndGlossy),
       diffuse_color_(color),
       albedo_(0.58f)
@@ -27,13 +27,13 @@ public:
    // getSurfaceProperties?
 
    MaterialType GetMaterialType() const { return material_type_; }
-   glm::vec3 GetDiffuseColor() const { return diffuse_color_; } // Should Evaluate, const Vec2f & 
+   Color GetDiffuseColor() const { return diffuse_color_; } // Should Evaluate, const Vec2f & 
    float GetAlbedo() const { return albedo_; }
 
 protected:
    // These should be packed up as Material class/struct
    MaterialType material_type_;
-   glm::vec3 diffuse_color_;
+   Color diffuse_color_;
    float albedo_;
    // specularExponent
 };

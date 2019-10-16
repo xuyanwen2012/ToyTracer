@@ -60,7 +60,7 @@ glm::vec3 ComputeIllumination(
    float light_reflected = element->GetAlbedo() / glm::pi<float>();
 
    //return surface_normal;
-   const auto color = element->GetDiffuseColor() * light_ptr->GetColor() * light_power * light_reflected;
+   const auto color = element->GetDiffuseColor() * light_ptr->GetColor() * light_power; // * light_reflected;
 
 
    // Compute Shadow?
@@ -87,7 +87,7 @@ glm::vec3 ComputeIllumination(
 // The main tracing function. 
 // 
 // 
-glm::vec3 Trace(
+Color Trace(
    const Ray& ray,
    ElementContainer& elements,
    std::unique_ptr<DirectionLight>& light_ptr, // tmp
@@ -116,7 +116,7 @@ glm::vec3 Trace(
    }
 
    // temp return background color
-   return glm::vec3{0.11764705882f, 0.56470588235f, 1.0f};
+   return Color{0.11764705882f, 0.56470588235f, 1.0f};
 }
 
 
@@ -130,28 +130,28 @@ int main()
 
    // first ball
    std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
-      glm::vec3{1.0f, 0.0f, 0.0f},
+      Colors::kRed,
       glm::vec3{-2.0f, 0.0f, -3.0f},
       1.0f
    );
 
    // second ball
    std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
-      glm::vec3{0.0f, 1.0f, 0.0f},
+      Colors::kGreen,
       glm::vec3{0.0f, 0.0f, -5.0f},
       1.0f
    );
 
    // third ball
    std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
-      glm::vec3{0.0f, 0.0f, 1.0f},
+      Colors::kBlue,
       glm::vec3{2.0f, 0.0f, -9.0f},
       1.0f
    );
 
    // Plane
    std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
-      glm::vec3{0.0f, -1.0f, 0.0f},
+      Colors::kWhite,
       glm::vec3{0.0f, -1.0f, 0.0f},
       glm::vec3{0.5f, 0.5f, 0.5f}
    );
@@ -164,8 +164,7 @@ int main()
    // Adding light to the scene
    // TODO: Fix this temp code
    auto light_ptr = std::make_unique<DirectionLight>(
-      glm::vec3{1.0f, 1.0f, 1.0f},
-      // Color::white(),
+      Colors::kWhite,
       1.0f,
       glm::vec3{0.0f, 0.0f, -1.0f}
    );
@@ -173,14 +172,14 @@ int main()
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
 
-   for (uint32_t y = 0; y < kHeight; ++y)
+   for (uint64_t y = 0; y < kHeight; ++y)
    {
-      for (uint32_t x = 0; x < kWidth; ++x)
+      for (uint64_t x = 0; x < kWidth; ++x)
       {
          Ray ray = BuildPrimeRay(kWidth, kHeight, x, y);
 
          // pixel should trace
-         frame_buffer[x + y * kWidth] = Trace(ray, elements, light_ptr, 0); // .ToVec3();
+         frame_buffer[x + y * kWidth] = Trace(ray, elements, light_ptr, 0);
       }
    }
 
@@ -191,9 +190,9 @@ int main()
    {
       image << "P3\n" << kWidth << " " << kHeight << " 255\n";
 
-      for (uint32_t y = 0; y < kHeight; ++y)
+      for (uint64_t y = 0; y < kHeight; ++y)
       {
-         for (uint32_t x = 0; x < kWidth; ++x)
+         for (uint64_t x = 0; x < kWidth; ++x)
          {
             const auto color = frame_buffer[x + y * kWidth];
 

@@ -6,7 +6,7 @@
 class Sphere : public Element
 {
 public:
-   Sphere(glm::vec3 color, const glm::vec3& center, const float radius) :
+   Sphere(Color color, const glm::vec3& center, const float radius) :
       Element(color),
       origin_(center),
       radius_(radius)
