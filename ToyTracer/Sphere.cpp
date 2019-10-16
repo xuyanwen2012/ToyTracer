@@ -22,5 +22,5 @@ bool Sphere::Intersect(const Ray& ray, float& t)
    }
 
    t = t0 < t1 ? t0 : t1;
-   return true; 
+   return true;
 }

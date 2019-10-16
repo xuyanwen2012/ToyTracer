@@ -7,8 +7,8 @@ class Sphere : public Element
 {
 public:
    Sphere(const glm::vec3& center, const double radius, Color color) :
-      origin_{ center },
-      radius_{ radius }
+      origin_{center},
+      radius_{radius}
    {
       diffuse_color_ = color;
    }

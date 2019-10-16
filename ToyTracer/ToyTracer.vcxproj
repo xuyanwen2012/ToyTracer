@@ -159,7 +159,6 @@
   <ItemGroup>
     <ClInclude Include="Color.h" />
     <ClInclude Include="Element.h" />
-    <ClInclude Include="Intersectable.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Sphere.h" />
