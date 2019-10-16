@@ -17,13 +17,15 @@ enum class MaterialType
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
 
-Ray BuildPrimeRay(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
+// Create a Ray from camera to pixel.
+// 
+Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 {
    const float fov_adjustment = glm::tan(glm::radians(90.0f) / 2.0f);
-   const float aspect_ratio = w / static_cast<float>(h);
+   const float aspect_ratio = width / static_cast<float>(height);
 
-   float sensor_x = (static_cast<float>(x) + 0.5f) / static_cast<float>(w) * 2.0f - 1.0f;
-   float sensor_y = 1.0f - (static_cast<float>(y) + 0.5f) / static_cast<float>(h) * 2.0f;
+   float sensor_x = (static_cast<float>(x) + 0.5f) / static_cast<float>(width) * 2.0f - 1.0f;
+   float sensor_y = 1.0f - (static_cast<float>(y) + 0.5f) / static_cast<float>(height) * 2.0f;
 
    sensor_x *= aspect_ratio * fov_adjustment;
    sensor_y *= fov_adjustment;
@@ -34,6 +36,9 @@ Ray BuildPrimeRay(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
    );
 }
 
+// The main tracing function. 
+// 
+// 
 Color Trace(const Ray& ray)
 {
    return Color::blue();
@@ -48,12 +53,7 @@ int main()
    const uint32_t kHeight = 600;
 
    // render image to buffer
-   //std::array<Color, kWidth * kHeight> frame_buffer {};
-   /* Color* frame_buffer = new Color[kWidth * kHeight];*/
-
-   auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
-
-   //auto frame_buffer = std::make_unique<Color[]>(kWidth * kHeight);
+   const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
 
    for (uint32_t y = 0; y < kHeight; ++y)
    {
@@ -85,8 +85,6 @@ int main()
 
       image.close();
    }
-
-   //delete[] frame_buffer;
 
    return EXIT_SUCCESS;
 }
