@@ -93,7 +93,7 @@ int main()
 
    // Plane
    std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
-      glm::vec3{},
+      glm::vec3{0.0f, -1.0f, 0.0f},
       glm::vec3{0.0f, -1.0f, 0.0f},
       Color::white()
    );
