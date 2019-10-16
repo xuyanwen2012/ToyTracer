@@ -22,7 +22,7 @@ public:
    // getSurfaceProperties?
 
    MaterialType GetMaterialType() const { return material_type_; }
-   // Color GetDiffuseColor() const { return diffuse_color_; } // Should Evaluate, const Vec2f & 
+   Color GetDiffuseColor() const { return diffuse_color_; } // Should Evaluate, const Vec2f & 
 
 protected:
    MaterialType material_type_;

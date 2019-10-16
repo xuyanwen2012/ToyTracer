@@ -40,10 +40,10 @@ Color Trace(const Ray& ray, ElementContainer& elements, int depth)
       Element* target;
       float min_dist = INFINITY;
 
-
       if (element->Intersect(ray))
       {
-         return Color::blue();
+         // Fix this
+         return element->GetDiffuseColor();
       }
    }
 
@@ -59,13 +59,29 @@ int main()
 
    ElementContainer elements;
 
-   std::unique_ptr<Element> sphere_ptr = std::make_unique<Sphere>(
+   // first ball
+   std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
       glm::vec3{0.0f, 0.0f, -5.0f},
+      1.0f,
+      Color::red()
+   );
+
+   // second ball
+   std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
+      glm::vec3{4.0f, 0.0f, -5.0f},
       1.0f,
       Color::green()
    );
 
-   elements.push_back(std::move(sphere_ptr));
+   std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
+      glm::vec3{-4.0f, 0.0f, -5.0f},
+      1.0f,
+      Color::blue()
+   );
+
+   elements.push_back(std::move(sphere_1_ptr));
+   elements.push_back(std::move(sphere_2_ptr));
+   elements.push_back(std::move(sphere_3_ptr));
 
 
    // render image to buffer
