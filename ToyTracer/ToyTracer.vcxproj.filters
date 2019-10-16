@@ -18,15 +18,30 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ray.h">
+    <ClInclude Include="Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sphere.h">
+    <ClInclude Include="Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="intersectable .h">
+    <ClInclude Include="Intersectable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Element.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -153,11 +153,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="intersectable .h" />
-    <ClInclude Include="ray.h" />
-    <ClInclude Include="sphere.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="Element.h" />
+    <ClInclude Include="Intersectable.h" />
+    <ClInclude Include="Plane.h" />
+    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Sphere.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

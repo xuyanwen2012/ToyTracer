@@ -1,107 +1,135 @@
-#include <iostream>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <glm/trigonometric.hpp>
+#include <vector>
+#include <array>
 
-#include "ray.h"
-#include "sphere.h"
+#include "Ray.h"
+#include "Color.h"
+#include "Element.h"
+#include "Sphere.h"
+#include "Plane.h"
 
-struct Color
+using ElementContainer = std::vector<std::unique_ptr<Element>>;
+
+// Create a Ray from camera to pixel.
+// 
+Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 {
-   uint8_t r;
-   uint8_t g;
-   uint8_t b;
-   // alpha
-};
+   const float fov_adjustment = glm::tan(glm::radians(90.0f) / 2.0f);
+   const float aspect_ratio = width / static_cast<float>(height);
 
-constexpr Color Red = Color{255, 0, 0};
-constexpr Color Black = Color{0, 0, 0};
+   float sensor_x = (static_cast<float>(x) + 0.5f) / static_cast<float>(width) * 2.0f - 1.0f;
+   float sensor_y = 1.0f - (static_cast<float>(y) + 0.5f) / static_cast<float>(height) * 2.0f;
 
-struct ViewBlock
-{
-   int x;
-   int y;
-   int width;
-   int height;
-};
+   sensor_x *= aspect_ratio * fov_adjustment;
+   sensor_y *= fov_adjustment;
 
-Ray CreatePrime(int x, int y)
-{
-   // TODO: Fix me
-   auto width = 800.f;
-   auto height = 600.f;
-
-   auto aspect_ratio = width / height;
-
-   const auto sensor_x = ((0.5f + static_cast<float>(x)) / width * 2.f - 1.f) * aspect_ratio;
-   const auto sensor_y = 1.f - (0.5f + static_cast<float>(y)) / height * 2.f;
-
-   return Ray{
-      glm::vec3{},
-      normalize(glm::vec3{sensor_x, sensor_y, -1.f})
-   };
+   return Ray(
+      glm::vec3(),
+      normalize(glm::vec3(sensor_x, sensor_y, -1.0))
+   );
 }
 
-std::unique_ptr<glm::vec3[]> RenderToBuffer(const ViewBlock& block, Intersectable& object)
+// The main tracing function. 
+// 
+// 
+Color Trace(const Ray& ray, ElementContainer& elements, int depth)
 {
-   const int w = block.width;
-   const int h = block.height;
-
-   auto frame_buffer = std::make_unique<glm::vec3[]>(w * h);
-
-   for (auto y = 0; y < block.height; ++y)
+   Element* target = nullptr;
+   float tnear = INFINITY;
+   float t = INFINITY;
+   for (auto&& element : elements)
    {
-      for (auto x = 0; x < block.width; ++x)
+      if (element->Intersect(ray, t))
       {
-         // iterate through all objects
-         Ray ray = CreatePrime(x, y);
-
-         if (auto t = object.Intersect(ray))
+         if (t < tnear)
          {
-            frame_buffer[x + y * w] = glm::vec3(255, 0 , 0);
-         }
-         else
-         {
-            frame_buffer[x + y * w] = glm::vec3(0, 0, 0);
+            tnear = t;
+            target = element.get();
          }
       }
    }
 
-   return frame_buffer;
+   if (target != nullptr)
+   {
+      // Compute Illumination
+
+      return target->GetDiffuseColor();
+   }
+
+   return Color::black();
 }
+
 
 int main()
 {
-   using namespace glm;
+   // Setup Scene
+   const uint32_t kWidth = 800;
+   const uint32_t kHeight = 600;
 
-   const size_t kWidth = 800;
-   const size_t kHeight = 600;
-   // fov
+   ElementContainer elements;
 
-   const ViewBlock kBlock = {0, 0, kWidth, kHeight};
+   // first ball
+   std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
+      glm::vec3{-2.0f, 0.0f, -3.0f},
+      1.0f,
+      Color::red()
+   );
 
-   auto sphere = Sphere{
-      vec3{
-         0.f,
-         0.f,
-         -5.f
-      },
-      1.f
-   };
+   // second ball
+   std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
+      glm::vec3{0.0f, 0.0f, -5.0f},
+      1.0f,
+      Color::green()
+   );
 
-   const auto frame_buffer = RenderToBuffer(kBlock, sphere);
+   // third ball
+   std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
+      glm::vec3{2.0f, 0.0f, -7.0f},
+      1.0f,
+      Color::blue()
+   );
 
-   // Write to file
+   // Plane
+   std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
+      glm::vec3{0.0f, -1.0f, 0.0f},
+      glm::vec3{0.0f, -1.0f, 0.0f},
+      Color::white()
+   );
+
+   elements.push_back(std::move(plane_ptr));
+   elements.push_back(std::move(sphere_1_ptr));
+   elements.push_back(std::move(sphere_2_ptr));
+   elements.push_back(std::move(sphere_3_ptr));
+
+
+   // render image to buffer
+   const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
+
+   for (uint32_t y = 0; y < kHeight; ++y)
+   {
+      for (uint32_t x = 0; x < kWidth; ++x)
+      {
+         Ray ray = BuildPrimeRay(kWidth, kHeight, x, y);
+
+         // pixel should trace
+         frame_buffer[x + y * kWidth] = Trace(ray, elements, 0).ToVec3();
+      }
+   }
+
+   // saving the ppm 
    std::ofstream image("image.ppm");
 
    if (image.is_open())
    {
-      image << "P3\n" << kBlock.width << " " << kBlock.height << " 255\n";
+      image << "P3\n" << kWidth << " " << kHeight << " 255\n";
 
-      for (auto y = 0; y < kBlock.height; ++y)
+      for (uint32_t y = 0; y < kHeight; ++y)
       {
-         for (auto x = 0; x < kBlock.width; ++x)
+         for (uint32_t x = 0; x < kWidth; ++x)
          {
-            const auto color = frame_buffer[x + y * kBlock.width];
+            const auto color = frame_buffer[x + y * kWidth];
 
             image << color.r << " " << color.g << " " << color.b << " ";
          }
