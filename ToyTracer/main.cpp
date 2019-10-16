@@ -35,16 +35,24 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 // 
 Color Trace(const Ray& ray, ElementContainer& elements, int depth)
 {
+   Element* target = nullptr;
+   float tnear = INFINITY;
+   float t = INFINITY;
    for (auto&& element : elements)
    {
-      Element* target;
-      float min_dist = INFINITY;
-
-      if (element->Intersect(ray))
+      if (element->Intersect(ray, t))
       {
-         // Fix this
-         return element->GetDiffuseColor();
+         if (t < tnear)
+         {
+            tnear = t;
+            target = element.get();
+         }
       }
+   }
+
+   if (target != nullptr)
+   {
+      return target->GetDiffuseColor();
    }
 
    return Color::black();
@@ -61,20 +69,20 @@ int main()
 
    // first ball
    std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
-      glm::vec3{0.0f, 0.0f, -5.0f},
+      glm::vec3{-2.0f, 0.0f, -3.0f},
       1.0f,
       Color::red()
    );
 
    // second ball
    std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
-      glm::vec3{4.0f, 0.0f, -5.0f},
+      glm::vec3{0.0f, 0.0f, -5.0f},
       1.0f,
       Color::green()
    );
 
    std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
-      glm::vec3{-4.0f, 0.0f, -5.0f},
+      glm::vec3{2.0f, 0.0f, -7.0f},
       1.0f,
       Color::blue()
    );

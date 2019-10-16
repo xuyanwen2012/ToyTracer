@@ -1,6 +1,6 @@
 #include "Sphere.h"
 
-bool Sphere::Intersect(const Ray& ray)
+bool Sphere::Intersect(const Ray& ray, float& t)
 {
    const auto l = origin_ - ray.GetOrigin();
    const auto adj = dot(l, ray.GetDirection());
@@ -21,5 +21,6 @@ bool Sphere::Intersect(const Ray& ray)
       return false;
    }
 
-   return true; // t0 < t1 ? t0 : t1;
+   t = t0 < t1 ? t0 : t1;
+   return true; 
 }

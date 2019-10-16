@@ -13,7 +13,7 @@ public:
       diffuse_color_ = color;
    }
 
-   bool Intersect(const Ray& ray) override;
+   bool Intersect(const Ray& ray, float& t) override;
 
 private:
    glm::vec3 origin_;

@@ -18,7 +18,7 @@ public:
    }
 
    virtual ~Element() = default;
-   virtual bool Intersect(const Ray&) = 0;
+   virtual bool Intersect(const Ray&, float&) = 0;
    // getSurfaceProperties?
 
    MaterialType GetMaterialType() const { return material_type_; }
