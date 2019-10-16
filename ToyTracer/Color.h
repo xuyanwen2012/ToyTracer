@@ -62,3 +62,18 @@
 //   uint8_t b;
 //   uint8_t a;
 //};
+
+#pragma once
+
+#include <glm/glm.hpp>
+
+using Color = glm::vec<3, uint8_t>;
+
+namespace Colors
+{
+   constexpr Color kBlack{ };
+   constexpr Color kWhite{ 255, 255, 255 };
+   constexpr Color kRed{255, 0, 0};
+   constexpr Color kGreen{0, 255, 0};
+   constexpr Color kBlue{0, 0, 255};
+}
