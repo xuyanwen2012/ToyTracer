@@ -72,14 +72,34 @@ Color Trace(
       const auto direction_to_light = light_ptr->GetDirectionFrom(hit_point);
 
       // check shadow here
+      auto shadow_ray = Ray{
+         hit_point + hit_normal * 1e-13f, // bias
+         direction_to_light
+      };
+      //auto shadow_intersection = Trace()
+      // TODO: Fix
+      bool in_shadow = false;
+      {
+         float _;
+         for (auto&& element : elements)
+         {
+            if (element->Intersect(shadow_ray, _))
+            {
+               in_shadow = true;
+               break;
+            }
+         }
+      }
 
-      const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_ptr->GetIntensity();
+      const auto light_intensity = in_shadow ? 0.0f : light_ptr->GetIntensity();
+
+      const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
 
       float light_reflected = target->GetAlbedo() / glm::pi<float>();
 
       //return hit_normal;
 
-      const auto color = target->GetDiffuseColor() * light_ptr->GetColor()* light_power;
+      const auto color = target->GetDiffuseColor() * light_ptr->GetColor() * light_power;
       // const auto color = hit_normal;
 
       return Color{
@@ -144,7 +164,8 @@ int main()
    std::unique_ptr<Light> light_ptr = std::make_unique<DirectionLight>(
       Colors::kWhite,
       1.0f,
-      glm::vec3{0.0f, 0.0f, -1.0f}
+      glm::vec3{ 0.0f, 0.0f, -1.0f }
+      //glm::vec3{ -1.0f, 0.0f, -1.0f }
    );
 
    // render image to buffer

@@ -25,8 +25,9 @@ class DirectionLight : public Light
 public:
    DirectionLight(Color color, float intensity, glm::vec3 direction) :
       Light(color, intensity),
-      direction_{direction}
+      direction_()
    {
+      direction_ = normalize(direction);
    }
 
    glm::vec3 GetDirectionFrom(const glm::vec3&) override { return -direction_; }
