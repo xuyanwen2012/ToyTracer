@@ -17,6 +17,7 @@ struct Material
    float albedo = 0.58f;
    float reflectivity = 0.5f;
    float transparency = 1.0f;
+   float index = 1.5f;
 };
 
 class Element
@@ -37,6 +38,7 @@ public:
    float GetAlbedo() const { return material_.albedo; }
    float GetReflectivity() const { return material_.reflectivity; }
    float GetTransparency() const { return material_.transparency; }
+   float GetIndex() const { return material_.index; }
 
 protected:
    Material material_;

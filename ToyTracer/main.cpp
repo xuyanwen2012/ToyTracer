@@ -82,6 +82,32 @@ Color ShadeDiffuse(
    return color;
 }
 
+float Fresnel(const glm::vec3& incident, const glm::vec3& normal, float index)
+{
+   const float i_dot_n = dot(incident, normal);
+
+   float eta_i = 1.0f;
+   const float eta_t = index;
+
+   if (i_dot_n > 0.0)
+   {
+      eta_i = eta_t;
+      eta_i = 1.0;
+   }
+
+   const float sin_t = eta_i / eta_t * glm::sqrt(glm::max(1.0f - i_dot_n * i_dot_n, 0.0f));
+   if (sin_t > 1.0)
+   {
+      return 1.0;
+   }
+   const float cos_t = glm::sqrt(glm::max(1.0f - sin_t * sin_t, 0.0f));
+   const float cos_i = glm::abs(cos_t);
+   const float r_s = ((eta_t * cos_i) - (eta_i * cos_t)) / ((eta_t * cos_i) + (eta_i * cos_t));
+   const float r_p = ((eta_i * cos_i) - (eta_t * cos_t)) / ((eta_i * cos_i) + (eta_t * cos_t));
+
+   return (r_s * r_s + r_p * r_p) / 2.0f;
+}
+
 // The main tracing function. 
 // 
 // 
@@ -129,6 +155,7 @@ Color Trace(
       case MaterialType::kDiffuse:
          {
             final_color = ShadeDiffuse(elements, lights, hit_point, hit_normal, target);
+
             break;
          }
       case MaterialType::kReflective:
@@ -145,7 +172,59 @@ Color Trace(
 
             break;
          }
-      case MaterialType::kRefractive: break;
+      case MaterialType::kRefractive:
+         {
+            float kr = Fresnel(ray.GetDirection(), hit_normal, target->GetIndex());
+            auto surface_color = target->GetDiffuseColor();
+            Color refraction_color = Colors::kBlack;
+
+            if (kr < 1.0)
+            {
+               // Create transmission ray
+               auto ref_n = hit_normal;
+               auto eta_t = target->GetIndex();
+               auto eta_i = 1.0f;
+               auto i_dot_n = dot(ray.GetDirection(), hit_normal);
+               if (i_dot_n < 0.0)
+               {
+                  //Outside the surface
+                  i_dot_n = -i_dot_n;
+               }
+               else
+               {
+                  //Inside the surface; invert the normal and swap the indices of refraction
+                  ref_n = -hit_normal;
+                  eta_i = eta_t;
+                  eta_t = 1.0f;
+               }
+
+               auto eta = eta_i / eta_t;
+               float k = 1.0f - (eta * eta) * (1.0f - i_dot_n * i_dot_n);
+
+               if (k >= 0.0)
+               {
+                  // Some
+                  auto transmission_ray = Ray{
+                     hit_point + ref_n * -1e-4f,
+                     (ray.GetDirection() + i_dot_n * ref_n) * eta - ref_n * sqrt(k),
+                  };
+
+                  refraction_color = Trace(transmission_ray, elements, lights, depth + 1);
+               }
+            }
+
+            // create a second ray
+            const auto reflection_ray = Ray{
+               hit_point + hit_normal * 1e-4f,
+               reflect(ray.GetDirection(), hit_normal)
+            };
+            auto reflection_color = Trace(reflection_ray, elements, lights, depth + 1);
+
+            final_color = reflection_color * static_cast<float>(kr) * refraction_color * static_cast<float>(1.0 - kr);
+            final_color *= target->GetTransparency() * surface_color;
+
+            break;
+         }
       default: ;
       }
 
@@ -189,9 +268,12 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    // third ball
    ElementPtr sphere_3_ptr = std::make_unique<Sphere>(
       Material{
-         MaterialType::kReflective,
+         MaterialType::kRefractive,
          Colors::kWhite,
          0.18f,
+         0.5f,
+         1.5f,
+         1.0f,
       },
       glm::vec3{2.0f, 1.0f, -4.0f},
       1.5f
