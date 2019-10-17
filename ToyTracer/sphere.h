@@ -15,14 +15,12 @@ public:
    {
    }
 
-   bool Intersect(const Ray& ray, float& t) override
+   bool Intersect(const Ray& ray, float& dist) override
    {
       return intersectRaySphere(
-         ray.GetOrigin(),
-         ray.GetDirection(),
-         origin_,
-         radius_ * radius_,
-         t
+         ray.GetOrigin(), ray.GetDirection(),
+         origin_, radius_ * radius_,
+         dist
       );
    }
 

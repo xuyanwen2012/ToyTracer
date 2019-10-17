@@ -10,8 +10,9 @@ public:
    Plane(Color color, glm::vec3 center, glm::vec3 normal) :
       Element(color),
       center_(center),
-      normal_(normal)
+      normal_()
    {
+      normal_ = normalize(normal);
    }
 
    bool Intersect(const Ray& ray, float& t) override

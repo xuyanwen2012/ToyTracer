@@ -38,50 +38,6 @@ Color ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
    return {};
 }
 
-// Helper function of Trace
-//
-//Color ComputeIllumination(
-//   const Ray& ray,
-//   float intersect_dist,
-//   Element* element,
-//   std::unique_ptr<DirectionLight>& light_ptr, // tmp
-//   int depth
-//)
-//{
-//   auto hit_point = ray.GetOrigin() + ray.GetDirection() * intersect_dist;
-//   const auto surface_normal = element->GetSurfaceNormal(hit_point);
-//   const auto direction_to_light = -light_ptr->GetDirection();
-//
-//   float light_power = dot(surface_normal, direction_to_light);
-//   light_power = std::max(0.0f, light_power) * light_ptr->GetIntensity();
-//
-//   float light_reflected = element->GetAlbedo() / glm::pi<float>();
-//
-//   //return surface_normal;
-//   const auto color = element->GetDiffuseColor() * light_ptr->GetColor() * light_power; // * light_reflected;
-//
-//
-//   // Compute Shadow?
-//
-//   return Color{
-//      glm::clamp(color.r, 0.0f, 1.0f),
-//      glm::clamp(color.g, 0.0f, 1.0f),
-//      glm::clamp(color.b, 0.0f, 1.0f)
-//   };
-//
-//
-//   //glm::vec3 color {};
-//   //switch (element->GetMaterialType())
-//   //{
-//   //case MaterialType::kReflectionAndRefraction:
-//   //case MaterialType::kReflection:
-//   //case MaterialType::kDiffuseAndGlossy: color = ShadeDiffuse(hit_point, surface_normal) break;
-//   //default: ;
-//   //}
-//
-//   //return color;
-//}
-
 // The main tracing function. 
 // 
 // 
@@ -95,7 +51,6 @@ Color Trace(
    Element* target = nullptr;
    float t_near = INFINITY;
    float dist = INFINITY; // intersect distance
-
    for (auto&& element : elements)
    {
       if (element->Intersect(ray, dist))
@@ -135,6 +90,7 @@ Color Trace(
    }
 
    // temp return background color
+   // TODO: use const
    return Color{0.11764705882f, 0.56470588235f, 1.0f};
 }
 
