@@ -1,6 +1,6 @@
 #pragma once
+
 #include "Color.h"
-#include <glm/common.hpp>
 
 class Light
 {

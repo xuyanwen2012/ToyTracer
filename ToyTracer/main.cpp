@@ -35,9 +35,49 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
    };
 }
 
-Color ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
+Color ShadeDiffuse(
+   ElementContainer& elements, LightContainer& lights,
+   glm::vec3& hit_point, glm::vec3& hit_normal,
+   Element* target
+)
 {
-   return {};
+   auto color = Colors::kBlack;
+
+   // Check against all lights
+   for (auto&& light : lights)
+   {
+      const auto direction_to_light = light->GetDirectionFrom(hit_point);
+
+      // check shadow here
+      auto shadow_ray = Ray{
+         hit_point + hit_normal * 1e-4f, // std::numeric_limits<float>::epsilon(), // bias
+         direction_to_light
+      };
+
+      bool in_shadow = false;
+      {
+         float _;
+         for (auto&& element : elements)
+         {
+            if (element->Intersect(shadow_ray, _))
+            {
+               in_shadow = true;
+               break;
+            }
+         }
+      }
+      //in_shadow |= dist > light->GetDistanceFrom(hit_point);
+
+      const auto light_intensity = in_shadow ? 0.0f : light->GetIntensity(hit_point);
+
+      const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
+
+      const float light_reflected = target->GetAlbedo() / glm::pi<float>();
+
+      color += target->GetDiffuseColor() * light->GetColor() * light_power * light_reflected;
+   }
+
+   return color;
 }
 
 // The main tracing function. 
@@ -65,49 +105,29 @@ Color Trace(
       }
    }
 
+   // Get Color
    if (target != nullptr)
    {
-      // Compute color
+
       auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
       auto final_color = Colors::kBlack;
 
-      // Check against all lights
-      for (auto&& light : lights)
+      switch (target->GetMaterialType())
       {
-         const auto direction_to_light = light->GetDirectionFrom(hit_point);
-
-         // check shadow here
-         auto shadow_ray = Ray{
-            hit_point + hit_normal * 1e-4f, // std::numeric_limits<float>::epsilon(), // bias
-            direction_to_light
-         };
-
-         bool in_shadow = false;
+      case MaterialType::kDiffuse:
          {
-            float _;
-            for (auto&& element : elements)
-            {
-               if (element->Intersect(shadow_ray, _))
-               {
-                  in_shadow = true;
-                  break;
-               }
-            }
+            final_color = ShadeDiffuse(elements, lights, hit_point, hit_normal, target);
+            break;
          }
-         //in_shadow |= dist > light->GetDistanceFrom(hit_point);
-
-         const auto light_intensity = in_shadow ? 0.0f : light->GetIntensity(hit_point);
-
-         const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
-
-         const float light_reflected = target->GetAlbedo() / glm::pi<float>();
-
-         final_color += target->GetDiffuseColor() * light->GetColor() * light_power * light_reflected;
+      case MaterialType::kReflective:
+         {
+            break;
+         }
+      case MaterialType::kRefractive: break;
+      default: ;
       }
-
-      return hit_normal;
 
       // const auto color = hit_normal;
       return Color{
@@ -124,8 +144,8 @@ Color Trace(
 int main()
 {
    // Setup Scene
-   const uint32_t kWidth = 1280;
-   const uint32_t kHeight = 720;
+   const int32_t kWidth = 1280;
+   const int32_t kHeight = 720;
 
    ElementContainer elements;
    LightContainer lights;
@@ -157,13 +177,12 @@ int main()
       // origin
       glm::vec3{0.0f, -2.0f, -5.0f},
       // normal
-      glm::vec3{0.0f, 1.0f, 0.0f}
-      //glm::vec3{0.0f, -1.0f, 0.0f}
+      glm::vec3{0.0f, -1.0f, 0.0f}
    );
 
-   elements.push_back(std::move(plane_ptr));
-   elements.push_back(std::move(sphere_2_ptr));
+   //elements.push_back(std::move(plane_ptr));
    elements.push_back(std::move(sphere_1_ptr));
+   elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
 
    // Adding light to the scene
@@ -192,9 +211,9 @@ int main()
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
 
-   for (uint64_t y = 0; y < kHeight; ++y)
+   for (auto y = 0; y < kHeight; ++y)
    {
-      for (uint64_t x = 0; x < kWidth; ++x)
+      for (auto x = 0; x < kWidth; ++x)
       {
          Ray ray = BuildPrimeRay(kWidth, kHeight, x, y);
 
@@ -210,9 +229,9 @@ int main()
    {
       image << "P3\n" << kWidth << " " << kHeight << " 255\n";
 
-      for (uint64_t y = 0; y < kHeight; ++y)
+      for (auto y = 0; y < kHeight; ++y)
       {
-         for (uint64_t x = 0; x < kWidth; ++x)
+         for (auto x = 0; x < kWidth; ++x)
          {
             const auto color = frame_buffer[x + y * kWidth];
 

@@ -5,16 +5,16 @@
 
 enum class MaterialType
 {
-   kReflectionAndRefraction,
-   kReflection,
-   kDiffuseAndGlossy,
+   kDiffuse,
+   kReflective,
+   kRefractive,
 };
 
 class Element
 {
 public:
    Element(Color color) :
-      material_type_(MaterialType::kDiffuseAndGlossy),
+      material_type_(MaterialType::kDiffuse),
       diffuse_color_(color),
       albedo_(0.58f)
    {
@@ -34,5 +34,4 @@ protected:
    MaterialType material_type_;
    Color diffuse_color_;
    float albedo_;
-   // specularExponent
 };
