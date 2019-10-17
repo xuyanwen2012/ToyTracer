@@ -16,6 +16,8 @@ using ElementPtr = std::unique_ptr<Element>;
 using LightContainer = std::vector<std::unique_ptr<Light>>;
 using LightPtr = std::unique_ptr<Light>;
 
+constexpr int kMaxRecursionDepth = 10;
+
 // Create a Ray from camera to pixel.
 // 
 Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
@@ -48,7 +50,7 @@ Color ShadeDiffuse(
    {
       const auto direction_to_light = light->GetDirectionFrom(hit_point);
 
-      // check shadow here
+      // check shadow here, casting a second ray
       auto shadow_ray = Ray{
          hit_point + hit_normal * 1e-4f, // std::numeric_limits<float>::epsilon(), // bias
          direction_to_light
@@ -90,6 +92,15 @@ Color Trace(
    int depth
 )
 {
+   // Recursion check
+
+   if (depth >= kMaxRecursionDepth)
+   {
+      return Colors::kBlack;
+   }
+
+   // Check intersections
+
    Element* target = nullptr;
    float t_near = INFINITY;
    float dist = INFINITY; // intersect distance
@@ -108,7 +119,6 @@ Color Trace(
    // Get Color
    if (target != nullptr)
    {
-
       auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
@@ -123,6 +133,16 @@ Color Trace(
          }
       case MaterialType::kReflective:
          {
+            final_color = ShadeDiffuse(elements, lights, hit_point, hit_normal, target);
+
+            const auto reflection_ray = Ray{
+               hit_point + hit_normal * 1e-4f,
+               reflect(ray.GetDirection(), hit_normal)
+            };
+
+            final_color *= 1 - target->GetReflectivity();
+            final_color += Trace(reflection_ray, elements, lights, depth + 1) * target->GetReflectivity();
+
             break;
          }
       case MaterialType::kRefractive: break;
