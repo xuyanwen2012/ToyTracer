@@ -35,3 +35,18 @@ public:
 private:
    glm::vec3 direction_;
 };
+
+class SphericalLight : public Light
+{
+public:
+   SphericalLight(Color color, float intensity, glm::vec3 origin) :
+      Light(color, intensity),
+      origin_(origin)
+   {
+   }
+
+   glm::vec3 GetDirectionFrom(const glm::vec3& point) override { return normalize(origin_ - point); }
+
+private:
+   glm::vec3 origin_;
+};

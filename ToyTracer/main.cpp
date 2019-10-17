@@ -73,7 +73,7 @@ Color Trace(
 
       // check shadow here
       auto shadow_ray = Ray{
-         hit_point + hit_normal * std::numeric_limits<float>::epsilon(), // bias
+         hit_point + hit_normal * 1e-6f,// std::numeric_limits<float>::epsilon(), // bias
          direction_to_light
       };
       //auto shadow_intersection = Trace()
@@ -159,11 +159,10 @@ int main()
 
    // Adding light to the scene
    // TODO: Fix this temp code
-   std::unique_ptr<Light> light_ptr = std::make_unique<DirectionLight>(
+   std::unique_ptr<Light> light_ptr = std::make_unique<SphericalLight>(
       Colors::kWhite,
       1.0f,
-      //glm::vec3{0.0f, 0.0f, -1.0f}
-      glm::vec3{1.0f, 1.0f, -1.0f}
+      glm::vec3{ -2.0f, 10.0f, -3.0f}
    );
 
    // render image to buffer
