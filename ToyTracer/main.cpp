@@ -79,7 +79,7 @@ Color Trace(
 
          // check shadow here
          auto shadow_ray = Ray{
-            hit_point + hit_normal * 1e-6f, // std::numeric_limits<float>::epsilon(), // bias
+            hit_point + hit_normal * 1e-4f, // std::numeric_limits<float>::epsilon(), // bias
             direction_to_light
          };
 
@@ -95,15 +95,15 @@ Color Trace(
                }
             }
          }
+         //in_shadow |= dist > light->GetDistanceFrom(hit_point);
 
-
-         const auto light_intensity = in_shadow ? 0.0f : light->GetIntensity();
+         const auto light_intensity = in_shadow ? 0.0f : light->GetIntensity(hit_point);
 
          const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
 
          float light_reflected = target->GetAlbedo() / glm::pi<float>();
 
-         color *= light->GetColor() * light_power;
+         color *= light->GetColor() * light_power * light_reflected;
       }
 
       // const auto color = hit_normal;
@@ -167,13 +167,20 @@ int main()
    //elements.push_back(std::move(plane_ptr));
 
    // Adding light to the scene
-   LightPtr light_ptr = std::make_unique<SphericalLight>(
-      Colors::kWhite,
-      1.0f,
+   LightPtr light_1_ptr = std::make_unique<SphericalLight>(
+      Colors::New(0.3f, 0.8f, 0.3f),
+      10000.0f,
       glm::vec3{ -2.0f, 10.0f, -3.0f}
    );
 
-   lights.push_back(std::move(light_ptr));
+   LightPtr light_2_ptr = std::make_unique<SphericalLight>(
+      Colors::New(0.8f, 0.3f, 0.3f),
+      250.0f,
+      glm::vec3{ 0.25f, 0.0f, -2.0f }
+   );
+
+   lights.push_back(std::move(light_1_ptr));
+   lights.push_back(std::move(light_2_ptr));
 
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);

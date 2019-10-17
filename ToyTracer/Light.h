@@ -1,23 +1,27 @@
 #pragma once
 #include "Color.h"
+#include <glm/common.hpp>
 
 class Light
 {
 public:
    virtual ~Light() = default;
 
-   Light(Color color, float intensity) : color_{color}, intensity_{intensity}
+   Light(Color color, float intensity) : intensity_{intensity}, color_{color}
    {
    }
 
-   virtual glm::vec3 GetDirectionFrom(const glm::vec3& point) = 0;
+   virtual glm::vec3 GetDirectionFrom(const glm::vec3&) = 0;
+   virtual float GetDistanceFrom(const glm::vec3&) = 0;
 
+   virtual float GetIntensity(glm::vec3&) { return intensity_; }
    Color GetColor() const { return color_; }
-   float GetIntensity() const { return intensity_; }
+
+protected:
+   float intensity_;
 
 private:
    Color color_;
-   float intensity_;
 };
 
 class DirectionLight : public Light
@@ -31,6 +35,7 @@ public:
    }
 
    glm::vec3 GetDirectionFrom(const glm::vec3&) override { return -direction_; }
+   float GetDistanceFrom(const glm::vec3&) override { return INFINITY; }
 
 private:
    glm::vec3 direction_;
@@ -46,6 +51,13 @@ public:
    }
 
    glm::vec3 GetDirectionFrom(const glm::vec3& point) override { return normalize(origin_ - point); }
+   float GetDistanceFrom(const glm::vec3& point) override { return length(origin_ - point); }
+
+   float GetIntensity(glm::vec3& point) override
+   {
+      const auto r2 = length(origin_ - point);
+      return intensity_ / (4.0f * glm::pi<float>() * r2);
+   }
 
 private:
    glm::vec3 origin_;
