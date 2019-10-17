@@ -73,7 +73,7 @@ Color Trace(
 
       // check shadow here
       auto shadow_ray = Ray{
-         hit_point + hit_normal * 1e-13f, // bias
+         hit_point + hit_normal * std::numeric_limits<float>::epsilon(), // bias
          direction_to_light
       };
       //auto shadow_intersection = Trace()
@@ -96,8 +96,6 @@ Color Trace(
       const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
 
       float light_reflected = target->GetAlbedo() / glm::pi<float>();
-
-      //return hit_normal;
 
       const auto color = target->GetDiffuseColor() * light_ptr->GetColor() * light_power;
       // const auto color = hit_normal;
@@ -157,15 +155,15 @@ int main()
    elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
-   elements.push_back(std::move(plane_ptr));
+   //elements.push_back(std::move(plane_ptr));
 
    // Adding light to the scene
    // TODO: Fix this temp code
    std::unique_ptr<Light> light_ptr = std::make_unique<DirectionLight>(
       Colors::kWhite,
       1.0f,
-      glm::vec3{0.0f, 0.0f, -1.0f}
-      //glm::vec3{ -1.0f, 0.0f, -1.0f }
+      //glm::vec3{0.0f, 0.0f, -1.0f}
+      glm::vec3{1.0f, 1.0f, -1.0f}
    );
 
    // render image to buffer
