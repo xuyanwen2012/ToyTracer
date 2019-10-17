@@ -71,7 +71,8 @@ Color Trace(
       auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
-      auto color = target->GetDiffuseColor();
+      auto final_color = Colors::kBlack;
+
       // Check against all lights
       for (auto&& light : lights)
       {
@@ -101,23 +102,20 @@ Color Trace(
 
          const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
 
-         float light_reflected = target->GetAlbedo() / glm::pi<float>();
+         const float light_reflected = target->GetAlbedo() / glm::pi<float>();
 
-         color *= light->GetColor() * light_power * light_reflected;
+         final_color += target->GetDiffuseColor() * light->GetColor() * light_power * light_reflected;
       }
 
       // const auto color = hit_normal;
-
       return Color{
-         glm::clamp(color.r, 0.0f, 1.0f),
-         glm::clamp(color.g, 0.0f, 1.0f),
-         glm::clamp(color.b, 0.0f, 1.0f)
+      glm::clamp(final_color.r, 0.0f, 1.0f),
+      glm::clamp(final_color.g, 0.0f, 1.0f),
+      glm::clamp(final_color.b, 0.0f, 1.0f)
       };
    }
 
-   // temp return background color
-   // TODO: use const
-   return Color{0.11764705882f, 0.56470588235f, 1.0f};
+   return Color{ 0.11764705882f, 0.56470588235f, 1.0f };
 }
 
 
@@ -167,20 +165,27 @@ int main()
    //elements.push_back(std::move(plane_ptr));
 
    // Adding light to the scene
-   LightPtr light_1_ptr = std::make_unique<SphericalLight>(
+   LightPtr light_s1_ptr = std::make_unique<SphericalLight>(
       Colors::New(0.3f, 0.8f, 0.3f),
       10000.0f,
       glm::vec3{ -2.0f, 10.0f, -3.0f}
    );
 
-   LightPtr light_2_ptr = std::make_unique<SphericalLight>(
+   LightPtr light_s2_ptr = std::make_unique<SphericalLight>(
       Colors::New(0.8f, 0.3f, 0.3f),
       250.0f,
       glm::vec3{ 0.25f, 0.0f, -2.0f }
    );
 
-   lights.push_back(std::move(light_1_ptr));
-   lights.push_back(std::move(light_2_ptr));
+   LightPtr light_d3_ptr = std::make_unique<DirectionLight>(
+      Colors::kWhite,
+      0.0f,
+      glm::vec3{ 0.0f, 0.0f, -1.0f }
+   );
+
+   lights.push_back(std::move(light_s1_ptr));
+   lights.push_back(std::move(light_s2_ptr));
+   lights.push_back(std::move(light_d3_ptr));
 
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
