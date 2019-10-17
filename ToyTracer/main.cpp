@@ -107,6 +107,8 @@ Color Trace(
          final_color += target->GetDiffuseColor() * light->GetColor() * light_power * light_reflected;
       }
 
+      return hit_normal;
+
       // const auto color = hit_normal;
       return Color{
       glm::clamp(final_color.r, 0.0f, 1.0f),
@@ -130,21 +132,21 @@ int main()
 
    // first ball
    ElementPtr sphere_1_ptr = std::make_unique<Sphere>(
-      Colors::kRed,
+      Colors::New(0.2f, 1.0f, 0.2f),
       glm::vec3{0.0f, 0.0f, -5.0f},
       1.0f
    );
 
    // second ball
    ElementPtr sphere_2_ptr = std::make_unique<Sphere>(
-      Colors::kGreen,
+      Colors::kRed,
       glm::vec3{-3.0f, 1.0f, -6.0f},
       2.0f
    );
 
    // third ball
    ElementPtr sphere_3_ptr = std::make_unique<Sphere>(
-      Colors::kBlue,
+      Colors::kWhite,
       glm::vec3{2.0f, 1.0f, -4.0f},
       1.5f
    );
@@ -153,16 +155,16 @@ int main()
    ElementPtr plane_ptr = std::make_unique<Plane>(
       Colors::kWhite,
       // origin
-      glm::vec3{0.0f, 0.0f, -20.0f},
+      glm::vec3{0.0f, -2.0f, -5.0f},
       // normal
       glm::vec3{0.0f, 1.0f, 0.0f}
       //glm::vec3{0.0f, -1.0f, 0.0f}
    );
 
-   elements.push_back(std::move(sphere_1_ptr));
+   elements.push_back(std::move(plane_ptr));
    elements.push_back(std::move(sphere_2_ptr));
+   elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_3_ptr));
-   //elements.push_back(std::move(plane_ptr));
 
    // Adding light to the scene
    LightPtr light_s1_ptr = std::make_unique<SphericalLight>(
