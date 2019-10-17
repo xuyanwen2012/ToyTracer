@@ -56,6 +56,8 @@ Color ShadeDiffuse(
          direction_to_light
       };
 
+      //bool in_shadow = false;
+
       bool in_shadow = false;
       {
          float _;
@@ -147,7 +149,7 @@ Color Trace(
       auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
-      auto final_color = Colors::kWhite;
+      auto final_color = Colors::kBlack;
 
       switch (target->GetMaterialType())
       {
@@ -173,24 +175,12 @@ Color Trace(
          }
       case MaterialType::kRefractive:
          {
-            //float kr = Fresnel(ray.GetDirection(), hit_normal, target->GetIndex());
-            float kr = 0.5f;
+            float kr = Fresnel(ray.GetDirection(), hit_normal, target->GetIndex());
+            //float kr = 0.5f;
 
-            //auto surface_color = target->GetDiffuseColor();
-            auto surface_color = ShadeDiffuse(elements, lights, hit_point, hit_normal, target);
-            Color refraction_color = Colors::kBlack;
-
-            /*
-            T const dotValue(dot(N, I));
-            T const k(static_cast<T>(1) - eta * eta * (static_cast<T>(1) - dotValue * dotValue));
-            vec<L, T, Q> const Result =
-               (k >= static_cast<T>(0)) ? (eta * I - (eta * dotValue + std::sqrt(k)) * N) : vec<L, T, Q>(0);
-            */
-            //Ray transmission_ray = Ray{
-            //   hit_point,
-            //   refract(ray.GetDirection(), hit_normal, target->GetIndex())
-            //};
-            //refraction_color = Trace(transmission_ray, elements, lights, depth + 1);
+            auto surface_color = target->GetDiffuseColor();
+            //auto surface_color = ShadeDiffuse(elements, lights, hit_point, hit_normal, target);
+            Color refraction_color = Colors::kWhite;  
 
             if (kr < 1.0)
             {
@@ -286,8 +276,8 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
          Colors::kWhite,
          0.18f,
          0.5f,
-         1.5f,
          1.0f,
+         1.5f,
       },
       glm::vec3{2.0f, 1.0f, -4.0f},
       1.5f
@@ -296,7 +286,7 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    // Plane
    ElementPtr plane_1_ptr = std::make_unique<Plane>(
       Material{
-         MaterialType::kDiffuse,
+         MaterialType::kReflective,
          Colors::kWhite,
          0.18f,
          0.5f,
@@ -304,7 +294,7 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
       // origin
       glm::vec3{0.0f, -2.0f, -5.0f},
       // normal
-      glm::vec3{0.0f, 1.0f, 0.0f}
+      glm::vec3{0.0f, -1.0f, 0.0f}
    );
 
    ElementPtr plane_2_ptr = std::make_unique<Plane>(
@@ -316,14 +306,14 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
       // origin
       glm::vec3{0.0f, 0.0f, -20.0f},
       // normal
-      glm::vec3{0.0f, 0.0f, 1.0f}
+      glm::vec3{0.0f, 0.0f, -1.0f}
    );
 
    elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
-   elements.push_back(std::move(plane_1_ptr));
-   elements.push_back(std::move(plane_2_ptr));
+   //elements.push_back(std::move(plane_1_ptr));
+   //elements.push_back(std::move(plane_2_ptr));
 
    // Adding light to the scene
    LightPtr light_s1_ptr = std::make_unique<SphericalLight>(
@@ -345,8 +335,8 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    );
 
    lights.push_back(std::move(light_s1_ptr));
-   //lights.push_back(std::move(light_s2_ptr));
-   //lights.push_back(std::move(light_d3_ptr));
+   lights.push_back(std::move(light_s2_ptr));
+   lights.push_back(std::move(light_d3_ptr));
 }
 
 
