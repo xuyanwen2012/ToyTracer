@@ -3,7 +3,7 @@
 #include <glm/gtx/intersect.hpp>
 
 #include "Element.h"
- 
+
 class Plane : public Element
 {
 public:

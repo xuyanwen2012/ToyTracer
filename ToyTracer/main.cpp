@@ -150,7 +150,7 @@ int main()
       // origin
       glm::vec3{0.0f, 0.0f, -20.0f},
       // normal
-      glm::vec3{ 0.0f, 1.0f, 0.0f }
+      glm::vec3{0.0f, 1.0f, 0.0f}
       //glm::vec3{0.0f, -1.0f, 0.0f}
    );
 
@@ -164,7 +164,7 @@ int main()
    std::unique_ptr<Light> light_ptr = std::make_unique<DirectionLight>(
       Colors::kWhite,
       1.0f,
-      glm::vec3{ 0.0f, 0.0f, -1.0f }
+      glm::vec3{0.0f, 0.0f, -1.0f}
       //glm::vec3{ -1.0f, 0.0f, -1.0f }
    );
 
