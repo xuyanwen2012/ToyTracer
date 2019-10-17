@@ -28,7 +28,8 @@ public:
 
    glm::vec3 GetSurfaceNormal(glm::vec3& hit_point) override
    {
-      return normalize(hit_point - origin_);
+      // return normalize(hit_point - origin_); // mine
+      return (hit_point - origin_) / radius_; // from glm
    }
 
 private:

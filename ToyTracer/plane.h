@@ -16,10 +16,14 @@ public:
 
    bool Intersect(const Ray& ray, float& t) override
    {
-      return intersectRayPlane(ray.GetOrigin(), ray.GetDirection(), center_, normal_, t);
+      return intersectRayPlane(
+         ray.GetOrigin(), ray.GetDirection(),
+         center_, normal_,
+         t
+      );
    }
 
-   glm::vec3 GetSurfaceNormal(glm::vec3&) override { return -normal_; }
+   glm::vec3 GetSurfaceNormal(glm::vec3&) override { return normal_; }
 
 private:
    glm::vec3 center_;

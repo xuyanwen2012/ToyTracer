@@ -1,7 +1,7 @@
 #include <fstream>
 #include <glm/glm.hpp>
-#include <glm/trigonometric.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/trigonometric.hpp>
 #include <vector>
 #include <array>
 
@@ -12,6 +12,7 @@
 #include "Light.h"
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
+using ElementPtr = std::unique_ptr<Element>;
 
 // Create a Ray from camera to pixel.
 // 
@@ -93,15 +94,15 @@ Color Trace(
 {
    Element* target = nullptr;
    float t_near = INFINITY;
-   float t = INFINITY; // intersect distance
+   float dist = INFINITY; // intersect distance
 
    for (auto&& element : elements)
    {
-      if (element->Intersect(ray, t))
+      if (element->Intersect(ray, dist))
       {
-         if (t < t_near)
+         if (dist < t_near)
          {
-            t_near = t;
+            t_near = dist;
             target = element.get();
          }
       }
@@ -109,7 +110,21 @@ Color Trace(
 
    if (target != nullptr)
    {
-      return target->GetDiffuseColor();
+      // Compute color
+      auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
+      auto hit_normal = target->GetSurfaceNormal(hit_point);
+
+      const auto direction_to_light = -light_ptr->GetDirection();
+
+      float light_power = dot(hit_normal, direction_to_light);
+      light_power = glm::max(0.0f, light_power) * light_ptr->GetIntensity();
+
+      float light_reflected = target->GetAlbedo() / glm::pi<float>();
+
+      return hit_normal;
+
+      return target->GetDiffuseColor() * light_ptr->GetColor() * light_power;
+
       //return ComputeIllumination(ray, t, target, light_ptr, depth);
    }
 
@@ -127,39 +142,39 @@ int main()
    ElementContainer elements;
 
    // first ball
-   std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
+   ElementPtr sphere_1_ptr = std::make_unique<Sphere>(
       Colors::kRed,
       glm::vec3{0.0f, 0.0f, -5.0f},
       1.0f
    );
 
    // second ball
-   std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
+   ElementPtr sphere_2_ptr = std::make_unique<Sphere>(
       Colors::kGreen,
       glm::vec3{-3.0f, 1.0f, -6.0f},
       2.0f
    );
 
    // third ball
-   std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
+   ElementPtr sphere_3_ptr = std::make_unique<Sphere>(
       Colors::kBlue,
       glm::vec3{2.0f, 1.0f, -4.0f},
       1.5f
    );
 
    // Plane
-   std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
+   ElementPtr plane_ptr = std::make_unique<Plane>(
       Colors::kWhite,
       // origin
-      glm::vec3{0.0f, -2.0f, -5.0f},
+      glm::vec3{0.0f, 0.0f, -20.0f},
       // normal
       glm::vec3{0.0f, 1.0f, 0.0f} 
    );
 
-   elements.push_back(std::move(plane_ptr));
    elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
+   elements.push_back(std::move(plane_ptr));
 
    // Adding light to the scene
    // TODO: Fix this temp code
