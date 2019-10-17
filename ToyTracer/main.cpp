@@ -119,10 +119,9 @@ Color Trace(
 )
 {
    // Recursion check
-
    if (depth >= kMaxRecursionDepth)
    {
-      return Colors::kBlack;
+      return Colors::kRed;
    }
 
    // Check intersections
@@ -148,7 +147,7 @@ Color Trace(
       auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
-      auto final_color = Colors::kBlack;
+      auto final_color = Colors::kWhite;
 
       switch (target->GetMaterialType())
       {
@@ -174,44 +173,59 @@ Color Trace(
          }
       case MaterialType::kRefractive:
          {
-            float kr = Fresnel(ray.GetDirection(), hit_normal, target->GetIndex());
-            auto surface_color = target->GetDiffuseColor();
+            //float kr = Fresnel(ray.GetDirection(), hit_normal, target->GetIndex());
+            float kr = 0.5f;
+
+            //auto surface_color = target->GetDiffuseColor();
+            auto surface_color = ShadeDiffuse(elements, lights, hit_point, hit_normal, target);
             Color refraction_color = Colors::kBlack;
 
-            //if (kr < 1.0)
-            //{
-            //   // Create transmission ray
-            //   auto ref_n = hit_normal;
-            //   auto eta_t = target->GetIndex();
-            //   auto eta_i = 1.0f;
-            //   auto i_dot_n = dot(ray.GetDirection(), hit_normal);
-            //   if (i_dot_n < 0.0)
-            //   {
-            //      //Outside the surface
-            //      i_dot_n = -i_dot_n;
-            //   }
-            //   else
-            //   {
-            //      //Inside the surface; invert the normal and swap the indices of refraction
-            //      ref_n = -hit_normal;
-            //      eta_i = eta_t;
-            //      eta_t = 1.0f;
-            //   }
+            /*
+            T const dotValue(dot(N, I));
+            T const k(static_cast<T>(1) - eta * eta * (static_cast<T>(1) - dotValue * dotValue));
+            vec<L, T, Q> const Result =
+               (k >= static_cast<T>(0)) ? (eta * I - (eta * dotValue + std::sqrt(k)) * N) : vec<L, T, Q>(0);
+            */
+            //Ray transmission_ray = Ray{
+            //   hit_point,
+            //   refract(ray.GetDirection(), hit_normal, target->GetIndex())
+            //};
+            //refraction_color = Trace(transmission_ray, elements, lights, depth + 1);
 
-            //   auto eta = eta_i / eta_t;
-            //   float k = 1.0f - (eta * eta) * (1.0f - i_dot_n * i_dot_n);
+            if (kr < 1.0)
+            {
+               // Create transmission ray
+               auto ref_n = hit_normal;
+               auto eta_t = target->GetIndex();
+               auto eta_i = 1.0f;
+               auto i_dot_n = dot(ray.GetDirection(), hit_normal);
+               if (i_dot_n < 0.0)
+               {
+                  //Outside the surface
+                  i_dot_n = -i_dot_n;
+               }
+               else
+               {
+                  //Inside the surface; invert the normal and swap the indices of refraction
+                  ref_n = -hit_normal;
+                  eta_i = eta_t;
+                  eta_t = 1.0f;
+               }
 
-            //   if (k >= 0.0)
-            //   {
-            //      // Some
-            //      auto transmission_ray = Ray{
-            //         hit_point + ref_n * -1e-4f,
-            //         (ray.GetDirection() + i_dot_n * ref_n) * eta - ref_n * sqrt(k),
-            //      };
+               auto eta = eta_i / eta_t;
+               float k = 1.0f - (eta * eta) * (1.0f - i_dot_n * i_dot_n);
 
-            //      refraction_color = Trace(transmission_ray, elements, lights, depth + 1);
-            //   }
-            //}
+               if (k >= 0.0)
+               {
+                  // Some¡¤
+                  auto transmission_ray = Ray{
+                     hit_point + ref_n * -1e-4f,
+                     (ray.GetDirection() + i_dot_n * ref_n) * eta - ref_n * sqrt(k),
+                  };
+
+                  refraction_color = Trace(transmission_ray, elements, lights, depth + 1);
+               }
+            }
 
             // create a second ray
             const auto reflection_ray = Ray{
@@ -220,7 +234,7 @@ Color Trace(
             };
             auto reflection_color = Trace(reflection_ray, elements, lights, depth + 1);
 
-            final_color = reflection_color;// * kr * refraction_color * 1.0f - kr;
+            final_color = reflection_color * kr + refraction_color * 1.0f - kr;
             final_color *= target->GetTransparency() * surface_color;
 
             break;
@@ -279,19 +293,37 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
       1.5f
    );
 
-   //// Plane
-   //ElementPtr plane_ptr = std::make_unique<Plane>(
-   //   Colors::kWhite,
-   //   // origin
-   //   glm::vec3{ 0.0f, -2.0f, -5.0f },
-   //   // normal
-   //   glm::vec3{ 0.0f, -1.0f, 0.0f }
-   //);
+   // Plane
+   ElementPtr plane_1_ptr = std::make_unique<Plane>(
+      Material{
+         MaterialType::kDiffuse,
+         Colors::kWhite,
+         0.18f,
+         0.5f,
+      },
+      // origin
+      glm::vec3{0.0f, -2.0f, -5.0f},
+      // normal
+      glm::vec3{0.0f, 1.0f, 0.0f}
+   );
 
-   //elements.push_back(std::move(plane_ptr));
+   ElementPtr plane_2_ptr = std::make_unique<Plane>(
+      Material{
+         MaterialType::kDiffuse,
+         Colors::New(0.2f, 0.3f, 1.0f),
+         0.38f,
+      },
+      // origin
+      glm::vec3{0.0f, 0.0f, -20.0f},
+      // normal
+      glm::vec3{0.0f, 0.0f, 1.0f}
+   );
+
    elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
+   elements.push_back(std::move(plane_1_ptr));
+   elements.push_back(std::move(plane_2_ptr));
 
    // Adding light to the scene
    LightPtr light_s1_ptr = std::make_unique<SphericalLight>(
@@ -313,8 +345,8 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    );
 
    lights.push_back(std::move(light_s1_ptr));
-   lights.push_back(std::move(light_s2_ptr));
-   lights.push_back(std::move(light_d3_ptr));
+   //lights.push_back(std::move(light_s2_ptr));
+   //lights.push_back(std::move(light_d3_ptr));
 }
 
 
