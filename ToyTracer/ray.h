@@ -6,6 +6,7 @@ class Ray
 {
 public:
    Ray(const glm::vec3& from, const glm::vec3& to) :
+      direction_(),
       origin_(from)
    {
       // Have to normalize direction
