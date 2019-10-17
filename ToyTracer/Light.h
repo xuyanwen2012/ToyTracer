@@ -4,9 +4,13 @@
 class Light
 {
 public:
+   virtual ~Light() = default;
+
    Light(Color color, float intensity) : color_{color}, intensity_{intensity}
    {
    }
+
+   virtual glm::vec3 GetDirectionFrom(const glm::vec3& point) = 0;
 
    Color GetColor() const { return color_; }
    float GetIntensity() const { return intensity_; }
@@ -25,7 +29,7 @@ public:
    {
    }
 
-   glm::vec3 GetDirection() const { return direction_; }
+   glm::vec3 GetDirectionFrom(const glm::vec3&) override { return -direction_; }
 
 private:
    glm::vec3 direction_;

@@ -24,7 +24,6 @@ public:
 
    virtual bool Intersect(const Ray&, float& t) = 0;
    virtual glm::vec3 GetSurfaceNormal(glm::vec3&) = 0;
-   // getSurfaceProperties?
 
    MaterialType GetMaterialType() const { return material_type_; }
    Color GetDiffuseColor() const { return diffuse_color_; } // Should Evaluate, const Vec2f & 

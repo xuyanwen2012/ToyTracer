@@ -88,7 +88,7 @@ Color ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
 Color Trace(
    const Ray& ray,
    ElementContainer& elements,
-   std::unique_ptr<DirectionLight>& light_ptr, // tmp
+   std::unique_ptr<Light>& light_ptr, // tmp
    int depth
 )
 {
@@ -114,18 +114,24 @@ Color Trace(
       auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
-      const auto direction_to_light = -light_ptr->GetDirection();
+      const auto direction_to_light = light_ptr->GetDirectionFrom(hit_point);
 
-      float light_power = dot(hit_normal, direction_to_light);
-      light_power = glm::max(0.0f, light_power) * light_ptr->GetIntensity();
+      // check shadow here
+
+      const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_ptr->GetIntensity();
 
       float light_reflected = target->GetAlbedo() / glm::pi<float>();
 
-      return hit_normal;
+      //return hit_normal;
 
-      return target->GetDiffuseColor() * light_ptr->GetColor() * light_power;
+      const auto color = target->GetDiffuseColor() * light_ptr->GetColor()* light_power;
+      // const auto color = hit_normal;
 
-      //return ComputeIllumination(ray, t, target, light_ptr, depth);
+      return Color{
+         glm::clamp(color.r, 0.0f, 1.0f),
+         glm::clamp(color.g, 0.0f, 1.0f),
+         glm::clamp(color.b, 0.0f, 1.0f)
+      };
    }
 
    // temp return background color
@@ -168,7 +174,8 @@ int main()
       // origin
       glm::vec3{0.0f, 0.0f, -20.0f},
       // normal
-      glm::vec3{0.0f, 1.0f, 0.0f} 
+      glm::vec3{ 0.0f, 1.0f, 0.0f }
+      //glm::vec3{0.0f, -1.0f, 0.0f}
    );
 
    elements.push_back(std::move(sphere_1_ptr));
@@ -178,7 +185,7 @@ int main()
 
    // Adding light to the scene
    // TODO: Fix this temp code
-   auto light_ptr = std::make_unique<DirectionLight>(
+   std::unique_ptr<Light> light_ptr = std::make_unique<DirectionLight>(
       Colors::kWhite,
       1.0f,
       glm::vec3{0.0f, 0.0f, -1.0f}
