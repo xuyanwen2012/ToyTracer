@@ -179,7 +179,6 @@ Color Trace(
             //float kr = 0.5f;
 
             auto surface_color = target->GetDiffuseColor();
-            //auto surface_color = ShadeDiffuse(elements, lights, hit_point, hit_normal, target);
             Color refraction_color = Colors::kWhite;  
 
             if (kr < 1.0)
@@ -203,11 +202,10 @@ Color Trace(
                }
 
                auto eta = eta_i / eta_t;
-               float k = 1.0f - (eta * eta) * (1.0f - i_dot_n * i_dot_n);
+               float k = 1.0f - eta * eta * (1.0f - i_dot_n * i_dot_n);
 
                if (k >= 0.0)
                {
-                  // Some¡¤
                   auto transmission_ray = Ray{
                      hit_point + ref_n * -1e-4f,
                      (ray.GetDirection() + i_dot_n * ref_n) * eta - ref_n * sqrt(k),
@@ -294,7 +292,7 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
       // origin
       glm::vec3{0.0f, -2.0f, -5.0f},
       // normal
-      glm::vec3{0.0f, -1.0f, 0.0f}
+      glm::vec3{0.0f, 1.0f, 0.0f}
    );
 
    ElementPtr plane_2_ptr = std::make_unique<Plane>(
@@ -306,13 +304,13 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
       // origin
       glm::vec3{0.0f, 0.0f, -20.0f},
       // normal
-      glm::vec3{0.0f, 0.0f, -1.0f}
+      glm::vec3{0.0f, 0.0f, 1.0f}
    );
 
    elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
-   //elements.push_back(std::move(plane_1_ptr));
+   elements.push_back(std::move(plane_1_ptr));
    //elements.push_back(std::move(plane_2_ptr));
 
    // Adding light to the scene
