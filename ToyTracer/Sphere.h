@@ -3,13 +3,12 @@
 #include <glm/gtx/intersect.hpp>
 
 #include "Element.h"
-#include "Color.h"
 
 class Sphere : public Element
 {
 public:
-   Sphere(Color color, const glm::vec3& center, const float radius) :
-      Element(color),
+   Sphere(Material material, const glm::vec3& center, const float radius) :
+      Element(material),
       origin_(center),
       radius_(radius)
    {

@@ -151,13 +151,88 @@ Color Trace(
 
       // const auto color = hit_normal;
       return Color{
-      glm::clamp(final_color.r, 0.0f, 1.0f),
-      glm::clamp(final_color.g, 0.0f, 1.0f),
-      glm::clamp(final_color.b, 0.0f, 1.0f)
+         glm::clamp(final_color.r, 0.0f, 1.0f),
+         glm::clamp(final_color.g, 0.0f, 1.0f),
+         glm::clamp(final_color.b, 0.0f, 1.0f)
       };
    }
 
-   return Color{ 0.11764705882f, 0.56470588235f, 1.0f };
+   return Color{0.11764705882f, 0.56470588235f, 1.0f};
+}
+
+
+void SetupScene(ElementContainer& elements, LightContainer& lights)
+{
+   // first ball
+   ElementPtr sphere_1_ptr = std::make_unique<Sphere>(
+      Material{
+         MaterialType::kReflective,
+         Colors::New(0.2f, 1.0f, 0.2f),
+         0.18f,
+         0.7f,
+      },
+      glm::vec3{0.0f, 0.0f, -5.0f},
+      1.0f
+   );
+
+   // second ball
+   ElementPtr sphere_2_ptr = std::make_unique<Sphere>(
+      Material{
+         MaterialType::kDiffuse,
+         Colors::kRed,
+         0.58f,
+      },
+      glm::vec3{-3.0f, 1.0f, -6.0f},
+      2.0f
+   );
+
+   // third ball
+   ElementPtr sphere_3_ptr = std::make_unique<Sphere>(
+      Material{
+         MaterialType::kReflective,
+         Colors::kWhite,
+         0.18f,
+      },
+      glm::vec3{2.0f, 1.0f, -4.0f},
+      1.5f
+   );
+
+   //// Plane
+   //ElementPtr plane_ptr = std::make_unique<Plane>(
+   //   Colors::kWhite,
+   //   // origin
+   //   glm::vec3{ 0.0f, -2.0f, -5.0f },
+   //   // normal
+   //   glm::vec3{ 0.0f, -1.0f, 0.0f }
+   //);
+
+   //elements.push_back(std::move(plane_ptr));
+   elements.push_back(std::move(sphere_1_ptr));
+   elements.push_back(std::move(sphere_2_ptr));
+   elements.push_back(std::move(sphere_3_ptr));
+
+   // Adding light to the scene
+   LightPtr light_s1_ptr = std::make_unique<SphericalLight>(
+      Colors::New(0.3f, 0.8f, 0.3f),
+      10000.0f,
+      glm::vec3{-2.0f, 10.0f, -3.0f}
+   );
+
+   LightPtr light_s2_ptr = std::make_unique<SphericalLight>(
+      Colors::New(0.8f, 0.3f, 0.3f),
+      250.0f,
+      glm::vec3{0.25f, 0.0f, -2.0f}
+   );
+
+   LightPtr light_d3_ptr = std::make_unique<DirectionLight>(
+      Colors::kWhite,
+      0.0f,
+      glm::vec3{0.0f, 0.0f, -1.0f}
+   );
+
+   lights.push_back(std::move(light_s1_ptr));
+   lights.push_back(std::move(light_s2_ptr));
+   lights.push_back(std::move(light_d3_ptr));
 }
 
 
@@ -170,63 +245,7 @@ int main()
    ElementContainer elements;
    LightContainer lights;
 
-   // first ball
-   ElementPtr sphere_1_ptr = std::make_unique<Sphere>(
-      Colors::New(0.2f, 1.0f, 0.2f),
-      glm::vec3{0.0f, 0.0f, -5.0f},
-      1.0f
-   );
-
-   // second ball
-   ElementPtr sphere_2_ptr = std::make_unique<Sphere>(
-      Colors::kRed,
-      glm::vec3{-3.0f, 1.0f, -6.0f},
-      2.0f
-   );
-
-   // third ball
-   ElementPtr sphere_3_ptr = std::make_unique<Sphere>(
-      Colors::kWhite,
-      glm::vec3{2.0f, 1.0f, -4.0f},
-      1.5f
-   );
-
-   // Plane
-   ElementPtr plane_ptr = std::make_unique<Plane>(
-      Colors::kWhite,
-      // origin
-      glm::vec3{0.0f, -2.0f, -5.0f},
-      // normal
-      glm::vec3{0.0f, -1.0f, 0.0f}
-   );
-
-   //elements.push_back(std::move(plane_ptr));
-   elements.push_back(std::move(sphere_1_ptr));
-   elements.push_back(std::move(sphere_2_ptr));
-   elements.push_back(std::move(sphere_3_ptr));
-
-   // Adding light to the scene
-   LightPtr light_s1_ptr = std::make_unique<SphericalLight>(
-      Colors::New(0.3f, 0.8f, 0.3f),
-      10000.0f,
-      glm::vec3{ -2.0f, 10.0f, -3.0f}
-   );
-
-   LightPtr light_s2_ptr = std::make_unique<SphericalLight>(
-      Colors::New(0.8f, 0.3f, 0.3f),
-      250.0f,
-      glm::vec3{ 0.25f, 0.0f, -2.0f }
-   );
-
-   LightPtr light_d3_ptr = std::make_unique<DirectionLight>(
-      Colors::kWhite,
-      0.0f,
-      glm::vec3{ 0.0f, 0.0f, -1.0f }
-   );
-
-   lights.push_back(std::move(light_s1_ptr));
-   lights.push_back(std::move(light_s2_ptr));
-   lights.push_back(std::move(light_d3_ptr));
+   SetupScene(elements, lights);
 
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);

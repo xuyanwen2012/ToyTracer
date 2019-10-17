@@ -10,15 +10,20 @@ enum class MaterialType
    kRefractive,
 };
 
+struct Material
+{
+   MaterialType type = MaterialType::kDiffuse;
+   Color diffuse_color = Colors::kWhite;
+   float albedo = 0.58f;
+   float reflectivity = 0.5f;
+   float transparency = 1.0f;
+};
+
 class Element
 {
 public:
-   Element(Color color) :
-      material_type_(MaterialType::kReflective),
-      diffuse_color_(color),
-      albedo_(0.58f),
-      reflectivity_(0.5f),
-      transparency_(1.0f)
+   Element(Material material) :
+      material_(material)
    {
    }
 
@@ -27,21 +32,12 @@ public:
    virtual bool Intersect(const Ray&, float& t) = 0;
    virtual glm::vec3 GetSurfaceNormal(glm::vec3&) = 0;
 
-   MaterialType GetMaterialType() const { return material_type_; }
-   Color GetDiffuseColor() const { return diffuse_color_; } // Should Evaluate, const Vec2f & 
-   float GetAlbedo() const { return albedo_; }
-   float GetReflectivity() const { return reflectivity_; }
-   float GetTransparency() const { return transparency_; }
+   MaterialType GetMaterialType() const { return material_.type; }
+   Color GetDiffuseColor() const { return material_.diffuse_color; } // Should Evaluate, const Vec2f & 
+   float GetAlbedo() const { return material_.albedo; }
+   float GetReflectivity() const { return material_.reflectivity; }
+   float GetTransparency() const { return material_.transparency; }
 
 protected:
-   // These should be packed up as Material class/struct
-   MaterialType material_type_;
-   Color diffuse_color_;
-   float albedo_;
-
-   // Reflective 
-   float reflectivity_;
-
-   // Refractive
-   float transparency_;
+   Material material_;
 };

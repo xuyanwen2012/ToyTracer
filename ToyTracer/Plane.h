@@ -7,8 +7,8 @@
 class Plane : public Element
 {
 public:
-   Plane(Color color, glm::vec3 center, glm::vec3 normal) :
-      Element(color),
+   Plane(Material material, glm::vec3 center, glm::vec3 normal) :
+      Element(material),
       center_(center),
       normal_()
    {
