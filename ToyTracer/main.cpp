@@ -13,6 +13,8 @@
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
 using ElementPtr = std::unique_ptr<Element>;
+using LightContainer = std::vector<std::unique_ptr<Light>>;
+using LightPtr = std::unique_ptr<Light>;
 
 // Create a Ray from camera to pixel.
 // 
@@ -44,7 +46,7 @@ Color ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
 Color Trace(
    const Ray& ray,
    ElementContainer& elements,
-   std::unique_ptr<Light>& light_ptr, // tmp
+   LightContainer& lights,
    int depth
 )
 {
@@ -69,35 +71,41 @@ Color Trace(
       auto hit_point = ray.GetOrigin() + ray.GetDirection() * dist;
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
-      const auto direction_to_light = light_ptr->GetDirectionFrom(hit_point);
-
-      // check shadow here
-      auto shadow_ray = Ray{
-         hit_point + hit_normal * 1e-6f,// std::numeric_limits<float>::epsilon(), // bias
-         direction_to_light
-      };
-      //auto shadow_intersection = Trace()
-      // TODO: Fix
-      bool in_shadow = false;
+      auto color = target->GetDiffuseColor();
+      // Check against all lights
+      for (auto&& light : lights)
       {
-         float _;
-         for (auto&& element : elements)
+         const auto direction_to_light = light->GetDirectionFrom(hit_point);
+
+         // check shadow here
+         auto shadow_ray = Ray{
+            hit_point + hit_normal * 1e-6f, // std::numeric_limits<float>::epsilon(), // bias
+            direction_to_light
+         };
+
+         bool in_shadow = false;
          {
-            if (element->Intersect(shadow_ray, _))
+            float _;
+            for (auto&& element : elements)
             {
-               in_shadow = true;
-               break;
+               if (element->Intersect(shadow_ray, _))
+               {
+                  in_shadow = true;
+                  break;
+               }
             }
          }
+
+
+         const auto light_intensity = in_shadow ? 0.0f : light->GetIntensity();
+
+         const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
+
+         float light_reflected = target->GetAlbedo() / glm::pi<float>();
+
+         color *= light->GetColor() * light_power;
       }
 
-      const auto light_intensity = in_shadow ? 0.0f : light_ptr->GetIntensity();
-
-      const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
-
-      float light_reflected = target->GetAlbedo() / glm::pi<float>();
-
-      const auto color = target->GetDiffuseColor() * light_ptr->GetColor() * light_power;
       // const auto color = hit_normal;
 
       return Color{
@@ -120,6 +128,7 @@ int main()
    const uint32_t kHeight = 720;
 
    ElementContainer elements;
+   LightContainer lights;
 
    // first ball
    ElementPtr sphere_1_ptr = std::make_unique<Sphere>(
@@ -158,12 +167,13 @@ int main()
    //elements.push_back(std::move(plane_ptr));
 
    // Adding light to the scene
-   // TODO: Fix this temp code
-   std::unique_ptr<Light> light_ptr = std::make_unique<SphericalLight>(
+   LightPtr light_ptr = std::make_unique<SphericalLight>(
       Colors::kWhite,
       1.0f,
       glm::vec3{ -2.0f, 10.0f, -3.0f}
    );
+
+   lights.push_back(std::move(light_ptr));
 
    // render image to buffer
    const auto frame_buffer = std::make_unique<glm::vec3[]>(kWidth * kHeight);
@@ -175,7 +185,7 @@ int main()
          Ray ray = BuildPrimeRay(kWidth, kHeight, x, y);
 
          // pixel should trace
-         frame_buffer[x + y * kWidth] = Trace(ray, elements, light_ptr, 0);
+         frame_buffer[x + y * kWidth] = Trace(ray, elements, lights, 0);
       }
    }
 
