@@ -178,40 +178,40 @@ Color Trace(
             auto surface_color = target->GetDiffuseColor();
             Color refraction_color = Colors::kBlack;
 
-            if (kr < 1.0)
-            {
-               // Create transmission ray
-               auto ref_n = hit_normal;
-               auto eta_t = target->GetIndex();
-               auto eta_i = 1.0f;
-               auto i_dot_n = dot(ray.GetDirection(), hit_normal);
-               if (i_dot_n < 0.0)
-               {
-                  //Outside the surface
-                  i_dot_n = -i_dot_n;
-               }
-               else
-               {
-                  //Inside the surface; invert the normal and swap the indices of refraction
-                  ref_n = -hit_normal;
-                  eta_i = eta_t;
-                  eta_t = 1.0f;
-               }
+            //if (kr < 1.0)
+            //{
+            //   // Create transmission ray
+            //   auto ref_n = hit_normal;
+            //   auto eta_t = target->GetIndex();
+            //   auto eta_i = 1.0f;
+            //   auto i_dot_n = dot(ray.GetDirection(), hit_normal);
+            //   if (i_dot_n < 0.0)
+            //   {
+            //      //Outside the surface
+            //      i_dot_n = -i_dot_n;
+            //   }
+            //   else
+            //   {
+            //      //Inside the surface; invert the normal and swap the indices of refraction
+            //      ref_n = -hit_normal;
+            //      eta_i = eta_t;
+            //      eta_t = 1.0f;
+            //   }
 
-               auto eta = eta_i / eta_t;
-               float k = 1.0f - (eta * eta) * (1.0f - i_dot_n * i_dot_n);
+            //   auto eta = eta_i / eta_t;
+            //   float k = 1.0f - (eta * eta) * (1.0f - i_dot_n * i_dot_n);
 
-               if (k >= 0.0)
-               {
-                  // Some
-                  auto transmission_ray = Ray{
-                     hit_point + ref_n * -1e-4f,
-                     (ray.GetDirection() + i_dot_n * ref_n) * eta - ref_n * sqrt(k),
-                  };
+            //   if (k >= 0.0)
+            //   {
+            //      // Some
+            //      auto transmission_ray = Ray{
+            //         hit_point + ref_n * -1e-4f,
+            //         (ray.GetDirection() + i_dot_n * ref_n) * eta - ref_n * sqrt(k),
+            //      };
 
-                  refraction_color = Trace(transmission_ray, elements, lights, depth + 1);
-               }
-            }
+            //      refraction_color = Trace(transmission_ray, elements, lights, depth + 1);
+            //   }
+            //}
 
             // create a second ray
             const auto reflection_ray = Ray{
@@ -220,7 +220,7 @@ Color Trace(
             };
             auto reflection_color = Trace(reflection_ray, elements, lights, depth + 1);
 
-            final_color = reflection_color * static_cast<float>(kr) * refraction_color * static_cast<float>(1.0 - kr);
+            final_color = reflection_color;// * kr * refraction_color * 1.0f - kr;
             final_color *= target->GetTransparency() * surface_color;
 
             break;
