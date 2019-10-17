@@ -154,8 +154,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Plane.cpp" />
-    <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Color.h" />

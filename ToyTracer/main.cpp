@@ -39,47 +39,47 @@ Color ShadeDiffuse(glm::vec3 hit_point, glm::vec3 surface_normal)
 
 // Helper function of Trace
 //
-Color ComputeIllumination(
-   const Ray& ray,
-   float intersect_dist,
-   Element* element,
-   std::unique_ptr<DirectionLight>& light_ptr, // tmp
-   int depth
-)
-{
-   auto hit_point = ray.GetOrigin() + ray.GetDirection() * intersect_dist;
-   const auto surface_normal = element->GetSurfaceNormal(hit_point);
-   const auto direction_to_light = -light_ptr->GetDirection();
-
-   float light_power = dot(surface_normal, direction_to_light);
-   light_power = std::max(0.0f, light_power) * light_ptr->GetIntensity();
-
-   float light_reflected = element->GetAlbedo() / glm::pi<float>();
-
-   //return surface_normal;
-   const auto color = element->GetDiffuseColor() * light_ptr->GetColor() * light_power; // * light_reflected;
-
-
-   // Compute Shadow?
-
-   return Color{
-      glm::clamp(color.r, 0.0f, 1.0f),
-      glm::clamp(color.g, 0.0f, 1.0f),
-      glm::clamp(color.b, 0.0f, 1.0f)
-   };
-
-
-   //glm::vec3 color {};
-   //switch (element->GetMaterialType())
-   //{
-   //case MaterialType::kReflectionAndRefraction:
-   //case MaterialType::kReflection:
-   //case MaterialType::kDiffuseAndGlossy: color = ShadeDiffuse(hit_point, surface_normal) break;
-   //default: ;
-   //}
-
-   //return color;
-}
+//Color ComputeIllumination(
+//   const Ray& ray,
+//   float intersect_dist,
+//   Element* element,
+//   std::unique_ptr<DirectionLight>& light_ptr, // tmp
+//   int depth
+//)
+//{
+//   auto hit_point = ray.GetOrigin() + ray.GetDirection() * intersect_dist;
+//   const auto surface_normal = element->GetSurfaceNormal(hit_point);
+//   const auto direction_to_light = -light_ptr->GetDirection();
+//
+//   float light_power = dot(surface_normal, direction_to_light);
+//   light_power = std::max(0.0f, light_power) * light_ptr->GetIntensity();
+//
+//   float light_reflected = element->GetAlbedo() / glm::pi<float>();
+//
+//   //return surface_normal;
+//   const auto color = element->GetDiffuseColor() * light_ptr->GetColor() * light_power; // * light_reflected;
+//
+//
+//   // Compute Shadow?
+//
+//   return Color{
+//      glm::clamp(color.r, 0.0f, 1.0f),
+//      glm::clamp(color.g, 0.0f, 1.0f),
+//      glm::clamp(color.b, 0.0f, 1.0f)
+//   };
+//
+//
+//   //glm::vec3 color {};
+//   //switch (element->GetMaterialType())
+//   //{
+//   //case MaterialType::kReflectionAndRefraction:
+//   //case MaterialType::kReflection:
+//   //case MaterialType::kDiffuseAndGlossy: color = ShadeDiffuse(hit_point, surface_normal) break;
+//   //default: ;
+//   //}
+//
+//   //return color;
+//}
 
 // The main tracing function. 
 // 
@@ -109,7 +109,8 @@ Color Trace(
 
    if (target != nullptr)
    {
-      return ComputeIllumination(ray, t, target, light_ptr, depth);
+      return target->GetDiffuseColor();
+      //return ComputeIllumination(ray, t, target, light_ptr, depth);
    }
 
    // temp return background color
@@ -120,37 +121,39 @@ Color Trace(
 int main()
 {
    // Setup Scene
-   const uint32_t kWidth = 800;
-   const uint32_t kHeight = 600;
+   const uint32_t kWidth = 1280;
+   const uint32_t kHeight = 720;
 
    ElementContainer elements;
 
    // first ball
    std::unique_ptr<Element> sphere_1_ptr = std::make_unique<Sphere>(
       Colors::kRed,
-      glm::vec3{-2.0f, 0.0f, -3.0f},
+      glm::vec3{0.0f, 0.0f, -5.0f},
       1.0f
    );
 
    // second ball
    std::unique_ptr<Element> sphere_2_ptr = std::make_unique<Sphere>(
       Colors::kGreen,
-      glm::vec3{0.0f, 0.0f, -5.0f},
-      1.0f
+      glm::vec3{-3.0f, 1.0f, -6.0f},
+      2.0f
    );
 
    // third ball
    std::unique_ptr<Element> sphere_3_ptr = std::make_unique<Sphere>(
       Colors::kBlue,
-      glm::vec3{2.0f, 0.0f, -9.0f},
-      1.0f
+      glm::vec3{2.0f, 1.0f, -4.0f},
+      1.5f
    );
 
    // Plane
    std::unique_ptr<Element> plane_ptr = std::make_unique<Plane>(
       Colors::kWhite,
-      glm::vec3{0.0f, -1.0f, 0.0f},
-      glm::vec3{0.5f, 0.5f, 0.5f}
+      // origin
+      glm::vec3{0.0f, -2.0f, -5.0f},
+      // normal
+      glm::vec3{0.0f, 1.0f, 0.0f} 
    );
 
    elements.push_back(std::move(plane_ptr));

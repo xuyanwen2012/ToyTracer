@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/gtx/intersect.hpp>
+
 #include "Element.h"
 #include "Color.h"
 
@@ -13,7 +15,16 @@ public:
    {
    }
 
-   bool Intersect(const Ray& ray, float& t) override;
+   bool Intersect(const Ray& ray, float& t) override
+   {
+      return intersectRaySphere(
+         ray.GetOrigin(),
+         ray.GetDirection(),
+         origin_,
+         radius_,
+         t
+      );
+   }
 
    glm::vec3 GetSurfaceNormal(glm::vec3& hit_point) override
    {

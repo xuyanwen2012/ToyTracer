@@ -22,7 +22,7 @@ public:
 
    virtual ~Element() = default;
 
-   virtual bool Intersect(const Ray&, float&) = 0;
+   virtual bool Intersect(const Ray&, float& t) = 0;
    virtual glm::vec3 GetSurfaceNormal(glm::vec3&) = 0;
    // getSurfaceProperties?
 
