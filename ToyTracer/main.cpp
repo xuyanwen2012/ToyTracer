@@ -37,6 +37,12 @@ Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
    };
 }
 
+Color GetBackgroundColor(const Ray& ray)
+{
+   const float t = (ray.GetDirection().y + 1.0f) * 0.5f;
+   return (1.0f - t) * Colors::kWhite + t * Colors::New(0.5f, 0.7f, 1.0f);
+}
+
 Color ShadeDiffuse(
    ElementContainer& elements, LightContainer& lights,
    glm::vec3& hit_point, glm::vec3& hit_normal,
@@ -56,8 +62,6 @@ Color ShadeDiffuse(
          hit_point + hit_normal * 1e-4f, // std::numeric_limits<float>::epsilon(), // bias
          direction_to_light
       };
-
-      //bool in_shadow = false;
 
       bool in_shadow = false;
       {
@@ -127,22 +131,26 @@ Color Trace(
       return Colors::kRed;
    }
 
-   // Check intersections
+   // Check intersections, using a very *naive* brute force method.
+   // Do not try this at home. 
+   auto list = std::vector<std::pair<float, Element*>>();
 
-   Element* target = nullptr;
-   float t_near = INFINITY;
-   float dist = INFINITY; // intersect distance
    for (auto&& element : elements)
    {
+      float dist = INFINITY;
       if (element->Intersect(ray, dist))
       {
-         if (dist < t_near)
-         {
-            t_near = dist;
-            target = element.get();
-         }
+         list.emplace_back(dist, element.get());
       }
    }
+
+   std::sort(list.begin(), list.end(), [](auto& left, auto& right)
+   {
+      return left.first < right.first;
+   });
+
+   auto target = list.empty() ? nullptr : list.front().second;
+   auto dist = list.empty() ? INFINITY : list.front().first;
 
    // Get Color
    if (target != nullptr)
@@ -151,6 +159,9 @@ Color Trace(
       auto hit_normal = target->GetSurfaceNormal(hit_point);
 
       auto final_color = Colors::kBlack;
+
+      //return hit_normal;
+
 
       switch (target->GetMaterialType())
       {
@@ -239,9 +250,8 @@ Color Trace(
       };
    }
 
-   return Color{0.11764705882f, 0.56470588235f, 1.0f};
+   return GetBackgroundColor(ray);
 }
-
 
 void SetupScene(ElementContainer& elements, LightContainer& lights)
 {
@@ -312,7 +322,7 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
    elements.push_back(std::move(plane_1_ptr));
-   //elements.push_back(std::move(plane_2_ptr));
+   elements.push_back(std::move(plane_2_ptr));
 
    // Adding light to the scene
    LightPtr light_s1_ptr = std::make_unique<SphericalLight>(
@@ -337,7 +347,6 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    lights.push_back(std::move(light_s2_ptr));
    lights.push_back(std::move(light_d3_ptr));
 }
-
 
 int main()
 {
@@ -375,11 +384,11 @@ int main()
       {
          for (auto x = 0; x < kWidth; ++x)
          {
-            const auto color = frame_buffer[x + y * kWidth];
+            const auto color = Colors::ToRGBA(frame_buffer[x + y * kWidth]);
 
-            image << glm::clamp(static_cast<int>(color.r * 255), 0, 255) << " "
-               << glm::clamp(static_cast<int>(color.g * 255), 0, 255) << " "
-               << glm::clamp(static_cast<int>(color.b * 255), 0, 255) << " ";
+            image << glm::clamp(color.r, 0, 255) << " "
+               << glm::clamp(color.g, 0, 255) << " "
+               << glm::clamp(color.b, 0, 255) << " ";
          }
       }
 
