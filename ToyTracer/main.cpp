@@ -9,6 +9,7 @@
 #include "Element.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "Triangle.h"
 #include "Light.h"
 #include "Texture.h"
 
@@ -50,7 +51,7 @@ Color ShadeDiffuse(
    Element* target
 )
 {
-   auto texture_coords = target->TextureCoords(hit_point);
+   // auto texture_coords = target->TextureCoords(hit_point);
    auto color = Colors::kBlack;
 
    // Check against all lights
@@ -66,7 +67,7 @@ Color ShadeDiffuse(
 
       bool in_light = true;
 
-      float shadow_dist;
+      float shadow_dist = INFINITY;
       for (auto&& element : elements)
       {
          if (element->Intersect(shadow_ray, shadow_dist))
@@ -77,7 +78,6 @@ Color ShadeDiffuse(
       }
 
       in_light |= shadow_dist > light->GetDistanceFrom(hit_point);
-      //in_shadow |= dist > light->GetDistanceFrom(hit_point);
 
       const auto light_intensity = in_light ? light->GetIntensity(hit_point) : 0.0f;
 
@@ -162,8 +162,7 @@ Color Trace(
 
       auto final_color = Colors::kBlack;
 
-      //return hit_normal;
-
+       //return hit_normal;
 
       switch (target->GetMaterialType())
       {
@@ -294,6 +293,18 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
       1.5f
    );
 
+   // Triangle
+   ElementPtr triangle_1_ptr = std::make_unique<Triangle>(
+      Material{
+         MaterialType::kDiffuse,
+         Colors::kRed,
+         0.58f,
+      },
+      glm::vec3{  1.0f - 14.0f, 0.0f, -8.0f },
+      glm::vec3{ 3.0f - 14.0f, 4.0f, -6.0f },
+      glm::vec3{ 5.0f - 14.0f, 0.0f, -8.0f }
+      );
+
    // Plane
    ElementPtr plane_1_ptr = std::make_unique<Plane>(
       Material{
@@ -323,6 +334,7 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    elements.push_back(std::move(sphere_1_ptr));
    elements.push_back(std::move(sphere_2_ptr));
    elements.push_back(std::move(sphere_3_ptr));
+   //elements.push_back(std::move(triangle_1_ptr));
    elements.push_back(std::move(plane_1_ptr));
    elements.push_back(std::move(plane_2_ptr));
 
@@ -352,14 +364,9 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
 
 int main()
 {
-   Texture t(40, 40);
-
-
-   return 0;
-
    // Setup Scene
-   const int32_t kWidth = 1280;
-   const int32_t kHeight = 720;
+   const int32_t kWidth = 12800;
+   const int32_t kHeight = 7200;
 
    ElementContainer elements;
    LightContainer lights;
