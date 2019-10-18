@@ -10,6 +10,7 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "Light.h"
+#include "Texture.h"
 
 using ElementContainer = std::vector<std::unique_ptr<Element>>;
 using ElementPtr = std::unique_ptr<Element>;
@@ -351,6 +352,11 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
 
 int main()
 {
+   Texture t(40, 40);
+
+
+   return 0;
+
    // Setup Scene
    const int32_t kWidth = 1280;
    const int32_t kHeight = 720;
