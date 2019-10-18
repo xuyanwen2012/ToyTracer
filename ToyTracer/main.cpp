@@ -21,7 +21,7 @@ using LightPtr = std::unique_ptr<Light>;
 constexpr int kMaxRecursionDepth = 10;
 
 // Create a Ray from camera to pixel.
-// 
+//
 Ray BuildPrimeRay(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 {
    const float fov_adjustment = glm::tan(glm::radians(90.0f) / 2.0f);
@@ -117,9 +117,9 @@ float Fresnel(const glm::vec3& incident, const glm::vec3& normal, float index)
    return (r_s * r_s + r_p * r_p) / 2.0f;
 }
 
-// The main tracing function. 
-// 
-// 
+// The main tracing function.
+//
+//
 Color Trace(
    const Ray& ray,
    ElementContainer& elements,
@@ -134,7 +134,7 @@ Color Trace(
    }
 
    // Check intersections, using a very *naive* brute force method.
-   // Do not try this at home. 
+   // Do not try this at home.
    auto list = std::vector<std::pair<float, Element*>>();
 
    for (auto&& element : elements)
@@ -162,7 +162,7 @@ Color Trace(
 
       auto final_color = Colors::kBlack;
 
-       //return hit_normal;
+      //return hit_normal;
 
       switch (target->GetMaterialType())
       {
@@ -300,10 +300,10 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
          Colors::kRed,
          0.58f,
       },
-      glm::vec3{  1.0f - 14.0f, 0.0f, -8.0f },
-      glm::vec3{ 3.0f - 14.0f, 4.0f, -6.0f },
-      glm::vec3{ 5.0f - 14.0f, 0.0f, -8.0f }
-      );
+      glm::vec3{1.0f - 14.0f, 0.0f, -8.0f},
+      glm::vec3{3.0f - 14.0f, 4.0f, -6.0f},
+      glm::vec3{5.0f - 14.0f, 0.0f, -8.0f}
+   );
 
    // Plane
    ElementPtr plane_1_ptr = std::make_unique<Plane>(
@@ -365,8 +365,8 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
 int main()
 {
    // Setup Scene
-   const int32_t kWidth = 12800;
-   const int32_t kHeight = 7200;
+   const int32_t kWidth = 1280;
+   const int32_t kHeight = 720;
 
    ElementContainer elements;
    LightContainer lights;
@@ -387,7 +387,7 @@ int main()
       }
    }
 
-   // saving the ppm 
+   // saving the ppm
    std::ofstream image("image.ppm");
 
    if (image.is_open())

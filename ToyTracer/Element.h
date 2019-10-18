@@ -20,7 +20,6 @@ struct Material
    float index = 1.5f;
 };
 
-
 uint32_t Wrap(float val, uint32_t bound)
 {
    const auto signed_bound = static_cast<int32_t>(bound);
@@ -47,7 +46,6 @@ public:
    virtual bool Intersect(const Ray&, float& t) = 0;
    virtual glm::vec3 GetSurfaceNormal(glm::vec3&) = 0;
    virtual glm::vec2 TextureCoords(glm::vec3&) = 0;
-
 
    Color GetColoration(const glm::vec2& coords) const
    {

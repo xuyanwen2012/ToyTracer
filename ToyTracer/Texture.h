@@ -24,7 +24,7 @@
 class Texture
 {
 public:
-   Texture(int width, int height): width_(width), height_(height)
+   Texture(int width, int height) : width_(width), height_(height)
    {
       fake_data_ = new std::vector<Color>(width_ * height_);
 
@@ -56,12 +56,10 @@ public:
             auto v = fake_data_->operator[](x + y * width_);
 
             std::cout << static_cast<int>(v.r);
-
          }
 
          std::cout << std::endl;
       }
-
    }
 
 private:
