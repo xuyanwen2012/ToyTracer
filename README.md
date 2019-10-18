@@ -22,7 +22,7 @@ A naive toy Ray Tracer built from ~~scract~~ (given up), used a third-party libr
 
 Sphere Implementation
 
-```
+```c++
 
 #pragma once
 
