@@ -1,4 +1,4 @@
-# ToyTracer
+# 🎺 ToyTracer
 > CMPM 164, Fall 2019
 
 This repo is for homework 2B. 
