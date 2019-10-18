@@ -7,7 +7,9 @@ A naive toy Ray Tracer built from ~~scract~~ (given up), used a third-party libr
 
 ## Outputs
 
+![alt text](0.png)
 
+With 1280x720, Gama 2.2, FoV 90, Max Recursion Depth 10.  
 
 ## Features
 
