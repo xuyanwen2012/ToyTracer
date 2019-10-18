@@ -25,6 +25,7 @@ public:
    }
 
    glm::vec3 GetSurfaceNormal(glm::vec3&) override { return normal_; }
+   glm::vec2 TextureCoords(glm::vec3&) override { return {}; }
 
 private:
    glm::vec3 center_;

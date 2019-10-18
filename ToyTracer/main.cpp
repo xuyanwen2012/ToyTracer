@@ -43,6 +43,7 @@ Color ShadeDiffuse(
    Element* target
 )
 {
+   auto texture_coords = target->TextureCoords(hit_point);
    auto color = Colors::kBlack;
 
    // Check against all lights
@@ -179,7 +180,7 @@ Color Trace(
             //float kr = 0.5f;
 
             auto surface_color = target->GetDiffuseColor();
-            Color refraction_color = Colors::kWhite;  
+            Color refraction_color = Colors::kWhite;
 
             if (kr < 1.0)
             {
@@ -260,7 +261,7 @@ void SetupScene(ElementContainer& elements, LightContainer& lights)
    ElementPtr sphere_2_ptr = std::make_unique<Sphere>(
       Material{
          MaterialType::kDiffuse,
-         Colors::kRed,
+         Colors::kRed, // texture
          0.58f,
       },
       glm::vec3{-3.0f, 1.0f, -6.0f},
