@@ -63,21 +63,22 @@ Color ShadeDiffuse(
          direction_to_light
       };
 
-      bool in_shadow = false;
+      bool in_light = true;
+
+      float shadow_dist;
+      for (auto&& element : elements)
       {
-         float _;
-         for (auto&& element : elements)
+         if (element->Intersect(shadow_ray, shadow_dist))
          {
-            if (element->Intersect(shadow_ray, _))
-            {
-               in_shadow = true;
-               break;
-            }
+            in_light = false;
+            break;
          }
       }
+
+      in_light |= shadow_dist > light->GetDistanceFrom(hit_point);
       //in_shadow |= dist > light->GetDistanceFrom(hit_point);
 
-      const auto light_intensity = in_shadow ? 0.0f : light->GetIntensity(hit_point);
+      const auto light_intensity = in_light ? light->GetIntensity(hit_point) : 0.0f;
 
       const float light_power = glm::max(0.0f, dot(hit_normal, direction_to_light)) * light_intensity;
 
